@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -303,8 +304,9 @@ const gh = {
     this.shaCache = {};
   },
   async req(method, path, body) {
-    const url = `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${path}`;
-    const opts = { method, headers: { 'Authorization': `Bearer ${this.token}`, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' } };
+    const cacheBust = method === 'GET' ? `?ts=${Date.now()}` : '';
+    const url = `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${path}${cacheBust}`;
+    const opts = { method, cache: 'no-store', headers: { 'Authorization': `Bearer ${this.token}`, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', 'Cache-Control': 'no-cache' } };
     if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
     const r = await fetch(url, opts);
     if (!r.ok && r.status !== 404) {
@@ -595,23 +597,35 @@ function renderSleepHabit() {
   const labels = ['월','화','수','목','금','토','일'];
   let good = 0, bad = 0, checked = 0;
   DAYS.forEach((d, i) => {
-    const key = `sleep_phone:${d}`;
-    const state = localStorage.getItem(key) || 'none';
+    const state = sleepPhoneData[d] || 'none';
     if (state === 'good') good++; if (state === 'bad') bad++;
     if (state !== 'none') checked++;
     const cell = document.createElement('div');
     cell.className = 'sleep-cell ' + (state === 'good' ? 'good' : state === 'bad' ? 'bad' : '');
     const sym = state === 'good' ? '✗' : state === 'bad' ? '✓' : '○';
     cell.innerHTML = `<div style="font-size:10px;color:var(--text-3);">${labels[i]} ${d}</div><div style="font-size:18px;">${sym}</div>`;
-    cell.addEventListener('click', () => {
+    cell.addEventListener('click', async () => {
       const seq = ['none','good','bad'];
       const next = seq[(seq.indexOf(state) + 1) % seq.length];
-      if (next === 'none') localStorage.removeItem(key); else localStorage.setItem(key, next);
+      if (next === 'none') delete sleepPhoneData[d]; else sleepPhoneData[d] = next;
       renderSleepHabit();
+      try { await saveSleepPhoneData(); } catch (e) { toast('저장 실패: ' + e.message, false); }
     });
     row.appendChild(cell);
   });
   stats.textContent = `${checked}/7 · 안 들고감 ${good} · 들고감 ${bad}`;
+}
+
+let sleepPhoneData = {};
+async function loadSleepPhoneData() {
+  try {
+    const f = await gh.getFile('sleep-phone.json');
+    if (f.exists) sleepPhoneData = JSON.parse(f.text || '{}');
+    else sleepPhoneData = {};
+  } catch (e) { sleepPhoneData = {}; }
+}
+async function saveSleepPhoneData() {
+  await gh.putFile('sleep-phone.json', JSON.stringify(sleepPhoneData, null, 2), 'Update sleep phone habit');
 }
 
 // Daily log autosave on blur
@@ -730,6 +744,7 @@ async function connect() {
     document.getElementById('sBook').dispatchEvent(new Event('change'));
     document.getElementById('sStart').value = nowTime();
     document.getElementById('sEnd').value = nowTime();
+    await loadSleepPhoneData();
     renderSleepHabit();
     await renderSessions();
     await loadActualAndRender();
@@ -741,6 +756,8 @@ async function connect() {
 }
 
 document.getElementById('reloadBtn').addEventListener('click', async () => {
+  await loadSleepPhoneData();
+  renderSleepHabit();
   await renderSessions();
   await loadActualAndRender();
 });
