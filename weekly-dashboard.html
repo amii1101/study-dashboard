@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>2주차 학습 대시보드</title>
 <style>
   :root {
@@ -17,11 +17,6 @@
     --accent-2: #7F77DD;
     --good: #1D9E75;
     --warn: #D85A30;
-    --c-herzog: #7F77DD;
-    --c-eagleton: #378ADD;
-    --c-mimesis: #1D9E75;
-    --c-enlight: #D85A30;
-    --c-oneway: #D4537E;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -40,21 +35,21 @@
     background: var(--bg);
     color: var(--text);
     line-height: 1.5;
-    padding: 24px;
+    padding: 16px;
     max-width: 1100px;
     margin: 0 auto;
   }
   header {
     display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 12px;
-    padding-bottom: 16px; margin-bottom: 24px;
+    flex-wrap: wrap; gap: 10px;
+    padding-bottom: 12px; margin-bottom: 20px;
     border-bottom: 1px solid var(--border);
   }
-  h1 { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; }
-  h2 { font-size: 15px; font-weight: 500; color: var(--text-2); margin-bottom: 12px; }
+  h1 { font-size: 20px; font-weight: 500; letter-spacing: -0.02em; }
+  h2 { font-size: 15px; font-weight: 500; color: var(--text-2); margin-bottom: 10px; }
   h3 { font-size: 13px; font-weight: 500; color: var(--text-2); margin-bottom: 8px; }
-  .week { font-size: 13px; color: var(--text-3); margin-left: 8px; }
-  button {
+  .week { font-size: 12px; color: var(--text-3); margin-left: 6px; }
+  button, input[type=button], input[type=submit] {
     background: var(--surface); color: var(--text);
     border: 1px solid var(--border); padding: 8px 14px;
     border-radius: 8px; font: inherit; font-size: 13px;
@@ -67,84 +62,72 @@
   .status { font-size: 12px; color: var(--text-3); }
   .status.ok { color: var(--good); }
   .status.warn { color: var(--warn); }
-
-  section { margin-bottom: 32px; }
+  input[type=text], input[type=number], input[type=time], input[type=password], select, textarea {
+    padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg); color: var(--text); font: inherit; font-size: 14px; width: 100%;
+  }
+  textarea { resize: vertical; min-height: 50px; }
+  section { margin-bottom: 24px; }
   .card {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 16px 18px;
+    border-radius: 12px; padding: 14px 16px;
   }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  @media (max-width: 540px) {
+    .row3 { grid-template-columns: 1fr 1fr; }
+    body { padding: 10px; }
+  }
+  label { font-size: 11px; color: var(--text-3); display: block; margin-bottom: 3px; }
 
-  .chart-wrap { position: relative; height: 280px; }
-  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; font-size: 12px; color: var(--text-2); }
-  .legend span { display: flex; align-items: center; gap: 6px; }
+  .chart-wrap { position: relative; height: 240px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; font-size: 11px; color: var(--text-2); }
+  .legend span { display: flex; align-items: center; gap: 5px; }
   .swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
 
-  .books-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-  .book-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-left: 3px solid var(--c-herzog);
-    border-radius: 0 10px 10px 0; padding: 14px 16px;
-  }
-  .book-card .name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
-  .book-card .meta { font-size: 11px; color: var(--text-3); margin-bottom: 10px; }
-  .progress-track {
-    height: 6px; background: var(--surface-2); border-radius: 3px;
-    overflow: hidden; margin-bottom: 6px;
-  }
+  .books-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+  .book-card { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent-2); border-radius: 0 10px 10px 0; padding: 12px 14px; }
+  .book-card .name { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+  .book-card .meta { font-size: 11px; color: var(--text-3); margin-bottom: 8px; }
+  .progress-track { height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; margin-bottom: 5px; }
   .progress-bar { height: 100%; transition: width 0.3s; }
   .progress-text { font-size: 11px; color: var(--text-2); display: flex; justify-content: space-between; }
-  .page-input {
-    margin-top: 8px; width: 100%; padding: 6px 10px;
-    border: 1px solid var(--border); border-radius: 6px;
-    background: var(--bg); color: var(--text); font-size: 12px;
-  }
 
-  .today-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; align-items: start; }
-  @media (max-width: 720px) { .today-row { grid-template-columns: 1fr; } }
-
-  .session-list { display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto; }
-  .session-item {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 10px 12px; font-size: 13px;
-  }
-  .session-item .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .session-list { display: flex; flex-direction: column; gap: 8px; max-height: 480px; overflow-y: auto; }
+  .session-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 13px; }
+  .session-item .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; flex-wrap: wrap; gap: 6px; }
   .session-item .time { color: var(--text-3); font-size: 11px; }
   .session-item .body { font-size: 12px; color: var(--text-2); }
   .session-empty { color: var(--text-3); font-size: 12px; padding: 16px; text-align: center; border: 1px dashed var(--border); border-radius: 8px; }
 
-  .session-form { display: flex; flex-direction: column; gap: 8px; background: var(--surface-2); padding: 12px; border-radius: 10px; }
-  .session-form label { font-size: 11px; color: var(--text-3); }
-  .session-form input, .session-form select, .session-form textarea {
-    padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;
-    background: var(--surface); color: var(--text); font: inherit; font-size: 13px;
-  }
-  .session-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .session-form textarea { resize: vertical; min-height: 50px; }
-  .focus-row { display: flex; align-items: center; gap: 10px; }
-  .focus-row input { flex: 1; }
-  .focus-val { font-size: 13px; font-weight: 500; min-width: 28px; text-align: right; }
-
-  .habits { display: flex; flex-wrap: wrap; gap: 8px; }
-  .habit {
-    padding: 8px 12px; font-size: 12px; border: 1px solid var(--border);
-    border-radius: 999px; cursor: pointer; user-select: none;
-    background: var(--surface); transition: background 0.1s;
-  }
-  .habit:hover { background: var(--surface-2); }
-  .habit.done { background: #1D9E75; color: white; border-color: #1D9E75; }
-  .habit.partial { background: #BA7517; color: white; border-color: #BA7517; }
-  .habit.missed { background: var(--surface-2); color: var(--text-3); text-decoration: line-through; }
+  .session-form { display: flex; flex-direction: column; gap: 8px; }
 
   .toast {
     position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
     background: var(--text); color: var(--bg); padding: 10px 18px;
     border-radius: 8px; font-size: 13px; z-index: 100;
     opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    max-width: 90vw;
   }
   .toast.show { opacity: 1; }
 
   .muted { color: var(--text-3); font-size: 11px; }
-  hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+
+  #connectPanel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px; margin-bottom: 16px;
+  }
+  #connectPanel.hidden { display: none; }
+  #connectPanel label { font-size: 12px; color: var(--text-2); margin-top: 8px; }
+  #connectPanel .help { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+
+  .sleep-habit { display: flex; gap: 6px; flex-wrap: wrap; }
+  .sleep-cell { flex: 1; min-width: 80px; padding: 10px 4px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; user-select: none; background: var(--surface); text-align: center; font-size: 12px; }
+  .sleep-cell.good { background: #E1F5EE; color: #04342C; }
+  .sleep-cell.bad { background: #FCEBEB; color: #501313; }
+
+  .today-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 720px) { .today-row { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -154,23 +137,32 @@
     <h1>2주차 학습 대시보드<span class="week">5/11 ~ 5/17</span></h1>
     <div class="muted" id="todayLabel"></div>
   </div>
-  <div style="display: flex; align-items: center; gap: 10px;">
-    <span class="status" id="status">폴더 미연결</span>
-    <button class="primary" id="connectBtn">study-system 폴더 연결</button>
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <span class="status" id="status">미연결</span>
     <button id="reloadBtn" disabled>새로고침</button>
+    <button id="logoutBtn" disabled>로그아웃</button>
   </div>
 </header>
 
+<div id="connectPanel">
+  <h2 style="margin-bottom: 4px;">GitHub 연결</h2>
+  <p class="muted">처음 한 번만 입력하면 이 브라우저에 저장됩니다.</p>
+  <label>GitHub 사용자명</label>
+  <input type="text" id="ghOwner" placeholder="amii1101" />
+  <label>데이터 리포 이름</label>
+  <input type="text" id="ghRepo" placeholder="study-system" />
+  <label>Personal Access Token</label>
+  <input type="password" id="ghToken" placeholder="github_pat_..." />
+  <p class="help">Fine-grained token, study-system 리포 Contents Read &amp; Write 권한</p>
+  <button class="primary" id="connectBtn" style="margin-top: 10px;">연결</button>
+</div>
+
+<div id="mainContent" style="display: none;">
+
 <section>
   <div class="card">
-    <h2>주간 분량 (날짜별)</h2>
-    <div class="legend">
-      <span><span class="swatch" style="background:#7F77DD"></span>허조그 395p</span>
-      <span><span class="swatch" style="background:#378ADD"></span>이글턴 243p</span>
-      <span><span class="swatch" style="background:#1D9E75"></span>미메시스 122p</span>
-      <span><span class="swatch" style="background:#D85A30"></span>계몽주의 개론 190p</span>
-      <span><span class="swatch" style="background:#D4537E"></span>일방통행로 100p</span>
-    </div>
+    <h2>주간 계획 (날짜별)</h2>
+    <div class="legend" id="planLegend"></div>
     <div class="chart-wrap"><canvas id="weekChart"></canvas></div>
   </div>
 </section>
@@ -182,42 +174,29 @@
 
 <section>
   <h2>오늘 — <span id="todayDate"></span></h2>
-  <div class="card" style="margin-bottom: 16px;">
+  <div class="card" style="margin-bottom: 14px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
       <h3 style="margin: 0;">오늘의 일과</h3>
-      <span class="muted" id="dailyStatus">자동 저장 — 필드에서 빠져나갈 때 저장됨</span>
+      <span class="muted" id="dailyStatus">자동 저장 (포커스 빠질 때)</span>
     </div>
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <label style="flex: 0 0 60px; font-size: 12px; color: var(--text-2); font-weight: 500;">수면</label>
-        <input type="text" id="dl_sleep" placeholder="예: 23:30 잠 → 6:50 기상 (7h 20m, 중간 깸 1회)" style="flex: 1; padding: 6px 10px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
-      </div>
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <label style="flex: 0 0 60px; font-size: 12px; color: var(--text-2); font-weight: 500;">아침</label>
-        <input type="text" id="dl_morning" placeholder="예: 7:30 토스트+계란, 컨디션 6/10" style="flex: 1; padding: 6px 10px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
-      </div>
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <label style="flex: 0 0 60px; font-size: 12px; color: var(--text-2); font-weight: 500;">점심</label>
-        <input type="text" id="dl_lunch" placeholder="예: 12:30 학식, 빠르게" style="flex: 1; padding: 6px 10px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
-      </div>
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <label style="flex: 0 0 60px; font-size: 12px; color: var(--text-2); font-weight: 500;">저녁</label>
-        <input type="text" id="dl_dinner" placeholder="예: 19:00 집밥, 식사 중 산만" style="flex: 1; padding: 6px 10px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
-      </div>
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <label style="flex: 0 0 60px; font-size: 12px; color: var(--text-2); font-weight: 500;">운동</label>
-        <input type="text" id="dl_exercise" placeholder="예: 산책 30분 (저녁 식후), 또는 없음 등 짧게" style="flex: 1; padding: 6px 10px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
-      </div>
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <div style="display: flex; align-items: center; gap: 8px;"><label style="flex: 0 0 50px; margin: 0;">수면</label><input type="text" id="dl_sleep" placeholder="예: 23:30→6:50 (7h 20m)"></div>
+      <div style="display: flex; align-items: center; gap: 8px;"><label style="flex: 0 0 50px; margin: 0;">아침</label><input type="text" id="dl_morning" placeholder="예: 7:30 토스트"></div>
+      <div style="display: flex; align-items: center; gap: 8px;"><label style="flex: 0 0 50px; margin: 0;">점심</label><input type="text" id="dl_lunch" placeholder="예: 12:30 학식"></div>
+      <div style="display: flex; align-items: center; gap: 8px;"><label style="flex: 0 0 50px; margin: 0;">저녁</label><input type="text" id="dl_dinner" placeholder="예: 19:00 집밥"></div>
+      <div style="display: flex; align-items: center; gap: 8px;"><label style="flex: 0 0 50px; margin: 0;">운동</label><input type="text" id="dl_exercise" placeholder="예: 산책 30분"></div>
     </div>
   </div>
-  <div class="card" style="margin-bottom: 16px;">
+
+  <div class="card" style="margin-bottom: 14px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
       <h3 style="margin: 0;">이번 주 수면 습관 — 휴대폰 침대 X</h3>
       <span class="muted" id="sleepHabitStats"></span>
     </div>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="sleepHabitRow"></div>
-    <div class="muted" style="margin-top: 8px; font-size: 11px;">클릭: 미체크 → 휴대폰 안 들고감(✗) → 들고감(✓) → 미체크 순환</div>
+    <div class="sleep-habit" id="sleepHabitRow"></div>
+    <div class="muted" style="margin-top: 6px;">클릭: 미체크 → ✗ (안 들고감) → ✓ (들고감) → 미체크</div>
   </div>
+
   <div class="today-row">
     <div>
       <h3>세션 로그</h3>
@@ -225,259 +204,73 @@
     </div>
     <div>
       <h3>새 세션 기록</h3>
-      <div class="session-form">
+      <div class="card session-form">
         <div class="row">
-          <div>
-            <label>활동</label>
-            <select id="sActivity">
-              <option value="읽기">읽기 (input)</option>
-              <option value="정리">정리 (organize)</option>
-              <option value="쓰기">쓰기 (output)</option>
-            </select>
-          </div>
-          <div>
-            <label>책 / 프로젝트</label>
-            <select id="sBook"></select>
-          </div>
+          <div><label>활동</label><select id="sActivity"><option>읽기</option><option>정리</option><option>쓰기</option></select></div>
+          <div><label>책</label><select id="sBook"></select></div>
         </div>
         <div class="row">
-          <div>
-            <label>시작 시각</label>
-            <input type="time" id="sStart" />
-          </div>
-          <div>
-            <label>종료 시각</label>
-            <input type="time" id="sEnd" />
-          </div>
+          <div><label>시작</label><input type="time" id="sStart"></div>
+          <div><label>종료</label><input type="time" id="sEnd"></div>
         </div>
         <div class="row">
-          <div>
-            <label id="sStartLabel">시작 페이지 / 분량</label>
-            <input type="number" id="sStartPage" min="0" placeholder="자동 채움 (쓰기는 비워도 OK)" />
-          </div>
-          <div>
-            <label id="sEndLabel">종료 페이지 / 분량</label>
-            <input type="number" id="sEndPage" min="0" />
-          </div>
+          <div><label id="sStartLabel">시작 페이지</label><input type="number" id="sStartPage" min="0"></div>
+          <div><label id="sEndLabel">종료 페이지</label><input type="number" id="sEndPage" min="0"></div>
         </div>
-        <div>
-          <label>집중도 <span class="focus-val" id="sFocusVal">3</span> / 5</label>
-          <div class="focus-row">
-            <input type="range" id="sFocus" min="1" max="5" value="3" step="1" />
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <label>폰 킨 횟수</label>
-            <input type="number" id="sPhone" min="0" placeholder="0" />
-          </div>
-          <div>
-            <label>딴생각 (쉼표 구분, 적을수록 좋음)</label>
-            <input type="text" id="sDistraction" placeholder="예: 점심 메뉴, 카톡 알림" />
-          </div>
-        </div>
-        <div>
-          <label>키워드 (쉼표로 구분, 선택)</label>
-          <input type="text" id="sKeywords" placeholder="예: 매들린, 시점, 자유간접화법" />
-        </div>
-        <div>
-          <label>메모 (환경·컨디션, 선택)</label>
-          <textarea id="sMemo" placeholder="장소, 컨디션, 분위기 등 휘발성 맥락"></textarea>
-        </div>
-        <div>
-          <label>정리 (내용·깨달음, 선택)</label>
-          <textarea id="sReflection" placeholder="이 세션에서 무엇을 배웠는가? 떠오른 명제·관찰·질문" style="min-height: 70px;"></textarea>
-        </div>
+        <div><label>집중도 <span id="sFocusVal">3</span>/5</label><input type="range" id="sFocus" min="1" max="5" value="3"></div>
+        <div><label>키워드 (쉼표)</label><input type="text" id="sKeywords"></div>
+        <div><label>메모</label><input type="text" id="sMemo"></div>
+        <div><label>정리</label><textarea id="sReflection" placeholder="배운 내용·깨달음"></textarea></div>
         <button class="primary" id="saveSession">세션 저장</button>
-        <div id="feedbackBox" style="display: none; margin-top: 10px; padding: 12px 14px; background: var(--surface); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; font-size: 13px; line-height: 1.6;"></div>
+        <div id="feedbackBox" style="display: none; padding: 10px; background: var(--surface-2); border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; font-size: 12px;"></div>
       </div>
     </div>
   </div>
 </section>
 
 <section>
-  <h2>오늘의 습관</h2>
-  <div class="habits" id="habitsRow"></div>
-  <div class="muted" style="margin-top: 8px;">클릭: 미체크 → 완료(✓) → 부분(🔸) → 결석(✗) → 미체크</div>
-</section>
-
-<section>
   <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-      <h2 style="margin: 0;">실제 진행도 (지금까지)</h2>
-      <span class="muted" id="actualChartNote">로딩 중…</span>
-    </div>
-    <div class="legend">
-      <span><span class="swatch" style="background:#7F77DD"></span>허조그</span>
-      <span><span class="swatch" style="background:#378ADD"></span>이글턴</span>
-      <span><span class="swatch" style="background:#1D9E75"></span>미메시스</span>
-      <span><span class="swatch" style="background:#D85A30"></span>계몽주의 개론</span>
-      <span><span class="swatch" style="background:#D4537E"></span>일방통행로</span>
-    </div>
-    <div class="chart-wrap"><canvas id="actualChart" role="img" aria-label="이번 주 실제로 읽은 분량 누적 막대그래프"></canvas></div>
-    <div class="muted" style="margin-top: 10px;">세션 로그에 기록된 진행을 합산. 위 계획 차트와 비교해보세요.</div>
+    <h2>실제 진행도 (지금까지)</h2>
+    <span class="muted" id="actualChartNote"></span>
+    <div class="chart-wrap" style="margin-top: 8px;"><canvas id="actualChart"></canvas></div>
   </div>
 </section>
 
-<section>
-  <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-      <h2 style="margin: 0;">딴생각 누적</h2>
-      <span class="muted" id="distractionStats">로딩 중…</span>
-    </div>
-    <div id="distractionPanel" style="display: flex; flex-direction: column; gap: 8px;"></div>
-    <div class="muted" style="margin-top: 12px;">패턴이 보이면 환경을 바꿔보세요 — 시간대, 장소, 폰 위치 등. 적을수록 좋은 자기기록입니다.</div>
-  </div>
-</section>
-
-<section>
-  <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-      <h2 style="margin: 0;">이번 주 정리 누적</h2>
-      <span class="muted" id="reflectionStats">로딩 중…</span>
-    </div>
-    <div id="reflectionPanel" style="display: flex; flex-direction: column; gap: 10px;"></div>
-    <div class="muted" style="margin-top: 12px;">활동별 시간 + 자주 등장한 키워드 + 책별 정리 항목 누적. 글쓰기 진입할 때 그대로 자료가 됩니다.</div>
-  </div>
-</section>
-
-<section>
-  <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-      <h2 style="margin: 0;">지난 주 비교</h2>
-      <span class="muted" id="compareStats">로딩 중…</span>
-    </div>
-    <div class="chart-wrap" style="height: 260px;"><canvas id="compareChart" role="img" aria-label="1주차 5/4-5/10 대 2주차 5/11-5/17 누적 비교 막대그래프"></canvas></div>
-    <div id="compareTable" style="margin-top: 16px;"></div>
-    <div class="muted" style="margin-top: 12px;">1주차 (5/4 ~ 5/10) 실제 기록 vs 2주차 (5/11 ~ 5/17) 진행 — 모두 insight 파일 데이터 기준.</div>
-  </div>
-</section>
+</div>
 
 <div class="toast" id="toast"></div>
 
-<div id="editModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:200; align-items:center; justify-content:center; padding:20px;">
-  <div style="background:var(--bg); border:1px solid var(--border); border-radius:14px; padding:20px 24px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-      <h2 style="margin:0;">세션 수정</h2>
-      <button id="emClose" style="background:transparent; border:none; font-size:18px; cursor:pointer; color:var(--text-2);">×</button>
-    </div>
-    <div class="session-form" style="display:flex; flex-direction:column; gap:8px; background:transparent; padding:0;">
-      <div class="row">
-        <div>
-          <label>활동</label>
-          <select id="emActivity">
-            <option value="읽기">읽기</option>
-            <option value="정리">정리</option>
-            <option value="쓰기">쓰기</option>
-          </select>
-        </div>
-        <div>
-          <label>책 / 프로젝트</label>
-          <input type="text" id="emBook" />
-        </div>
-      </div>
-      <div class="row">
-        <div><label>시작 시각</label><input type="time" id="emStart" /></div>
-        <div><label>종료 시각</label><input type="time" id="emEnd" /></div>
-      </div>
-      <div class="row">
-        <div><label>시작 페이지 / 분량</label><input type="number" id="emStartPage" min="0" /></div>
-        <div><label>종료 페이지 / 분량</label><input type="number" id="emEndPage" min="0" /></div>
-      </div>
-      <div>
-        <label>집중도 <span class="focus-val" id="emFocusVal">3</span> / 5</label>
-        <div class="focus-row"><input type="range" id="emFocus" min="1" max="5" value="3" step="1" /></div>
-      </div>
-      <div class="row">
-        <div><label>폰 킨 횟수</label><input type="number" id="emPhone" min="0" /></div>
-        <div><label>딴생각</label><input type="text" id="emDistraction" /></div>
-      </div>
-      <div><label>키워드</label><input type="text" id="emKeywords" /></div>
-      <div><label>메모</label><textarea id="emMemo"></textarea></div>
-      <div><label>정리</label><textarea id="emReflection" style="min-height:70px;"></textarea></div>
-      <div style="display:flex; justify-content:space-between; gap:8px; margin-top:8px;">
-        <button id="emDelete" style="background:transparent; color:#A32D2D; border:1px solid #A32D2D; padding:8px 14px; border-radius:6px; cursor:pointer; font-size:13px;">🗑 삭제</button>
-        <div style="display:flex; gap:8px;">
-          <button id="emCancel" style="background:transparent; color:var(--text-2); border:1px solid var(--border); padding:8px 14px; border-radius:6px; cursor:pointer; font-size:13px;">취소</button>
-          <button id="emSave" class="primary">저장</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-// 2주차 (5/11 ~ 5/17) — unit: 'p' (페이지) | '%' (책 %)
 const PLAN = {
-  '소설의기술(쿤데라)': { color: '#A47CB8', total: 100, unit: '%', startPage: 0, endPage: 100,
+  '소설의기술(쿤데라)': { color: '#A47CB8', total: 100, unit: '%',
     days: { '5/11':25,'5/12':25,'5/13':25,'5/14':25,'5/15':0,'5/16':0,'5/17':0 } },
-  '허조그': { color: '#7F77DD', total: 355, unit: 'p', startPage: 240, endPage: 595,
+  '허조그': { color: '#7F77DD', total: 355, unit: 'p', startPage: 240,
     days: { '5/11':60,'5/12':50,'5/13':70,'5/14':60,'5/15':70,'5/16':45,'5/17':0 } },
-  '미메시스': { color: '#1D9E75', total: 200, unit: 'p', startPage: 0, endPage: 200,
+  '미메시스': { color: '#1D9E75', total: 200, unit: 'p',
     days: { '5/11':40,'5/12':40,'5/13':40,'5/14':40,'5/15':40,'5/16':0,'5/17':0 } },
-  '배신당한 유언들(쿤데라)': { color: '#D4537E', total: 100, unit: '%', startPage: 0, endPage: 100,
+  '배신당한 유언들(쿤데라)': { color: '#D4537E', total: 100, unit: '%',
     days: { '5/11':0,'5/12':0,'5/13':0,'5/14':0,'5/15':25,'5/16':0,'5/17':0 } },
-  '이글턴': { color: '#378ADD', total: 15, unit: 'p', startPage: 37, endPage: 52,
+  '이글턴': { color: '#378ADD', total: 15, unit: 'p', startPage: 37,
     days: { '5/11':0,'5/12':0,'5/13':15,'5/14':0,'5/15':0,'5/16':0,'5/17':0 } },
-  '계몽주의 개론': { color: '#D85A30', total: 60, unit: 'p', startPage: 0, endPage: 60,
+  '계몽주의 개론': { color: '#D85A30', total: 60, unit: 'p',
     days: { '5/11':0,'5/12':0,'5/13':0,'5/14':0,'5/15':0,'5/16':60,'5/17':0 } }
 };
-function getBookUnit(name) {
-  const stored = localStorage.getItem(`bookUnit:${name}`);
-  if (stored === 'p' || stored === '%') return stored;
-  const b = PLAN[name];
-  return (b && b.unit) || 'p';
-}
-function setBookUnit(name, unit) {
-  if (unit !== 'p' && unit !== '%') return;
-  localStorage.setItem(`bookUnit:${name}`, unit);
-  if (PLAN[name]) {
-    PLAN[name].unit = unit;
-    // When switching to %, also normalize total to 100 if currently page-based
-    if (unit === '%' && PLAN[name].total !== 100) {
-      PLAN[name].total = 100;
-      PLAN[name].endPage = 100;
-      PLAN[name].startPage = 0;
-    }
-  }
-}
 const DAYS = ['5/11','5/12','5/13','5/14','5/15','5/16','5/17'];
 const DAY_LABELS = ['월 5/11','화 5/12','수 5/13','목 5/14','금 5/15','토 5/16','일 5/17'];
-const HABITS = [
-  '정해진 시간에 시작','공부 전 계획 세우기','당일 노트 정리','주간 복습',
-  '질문·아이디어 기록','운동','수면 7시간+','영양제 먹기'
-];
 
-let dirHandle = null;
-let todayStr = '';
+const today = new Date();
+const todayStr = today.toISOString().slice(0,10);
 
-function fmtDate(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,'0');
-  const dd = String(d.getDate()).padStart(2,'0');
-  return `${y}-${m}-${dd}`;
-}
-function fmtTodayKR(d) {
-  const dow = ['일','월','화','수','목','금','토'][d.getDay()];
-  return `${d.getMonth()+1}/${d.getDate()} (${dow})`;
-}
-function nowTime() {
-  const d = new Date();
-  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
-}
-function diffMin(start, end) {
-  const [sh,sm] = start.split(':').map(Number);
-  const [eh,em] = end.split(':').map(Number);
-  return (eh*60+em) - (sh*60+sm);
-}
+document.getElementById('todayLabel').textContent = `오늘: ${today.getMonth()+1}/${today.getDate()} (${['일','월','화','수','목','금','토'][today.getDay()]})`;
+document.getElementById('todayDate').textContent = `${today.getMonth()+1}/${today.getDate()} (${['일','월','화','수','목','금','토'][today.getDay()]})`;
 
 function toast(msg, ok=true) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.style.background = ok ? 'var(--text)' : '#A32D2D';
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
+  setTimeout(() => t.classList.remove('show'), 2500);
 }
 
 function setStatus(msg, kind='') {
@@ -486,322 +279,68 @@ function setStatus(msg, kind='') {
   s.className = 'status ' + kind;
 }
 
-const EXTRA_PALETTE = ['#888780','#3B6D11','#854F0B','#A32D2D','#3C3489','#085041','#712B13','#72243E','#444441','#BA7517'];
-function getBookColor(name) {
-  if (PLAN[name] && PLAN[name].color) return PLAN[name].color;
-  let h = 0; for (let i=0; i<name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
-  return EXTRA_PALETTE[h % EXTRA_PALETTE.length];
-}
-
-function loadExtraBooksFromStorage() {
-  try {
-    const extras = JSON.parse(localStorage.getItem('extraBooks') || '[]');
-    extras.forEach(b => {
-      if (b && b.name && !PLAN[b.name]) {
-        PLAN[b.name] = {
-          color: b.color || getBookColor(b.name),
-          total: b.total || 0, startPage: b.startPage || 0, endPage: b.endPage || 0,
-          days: {}, isExtra: true
-        };
-      }
-    });
-  } catch (e) {}
-}
-
-function saveExtraBookLocal(name, color) {
-  try {
-    const extras = JSON.parse(localStorage.getItem('extraBooks') || '[]');
-    if (!extras.find(b => b.name === name)) {
-      extras.push({ name, color });
-      localStorage.setItem('extraBooks', JSON.stringify(extras));
+// ===== GitHub API client =====
+const gh = {
+  owner: '', repo: '', token: '',
+  shaCache: {},
+  setCreds(owner, repo, token) {
+    this.owner = owner; this.repo = repo; this.token = token;
+    localStorage.setItem('gh_owner', owner);
+    localStorage.setItem('gh_repo', repo);
+    localStorage.setItem('gh_token', token);
+  },
+  loadCreds() {
+    this.owner = localStorage.getItem('gh_owner') || '';
+    this.repo = localStorage.getItem('gh_repo') || '';
+    this.token = localStorage.getItem('gh_token') || '';
+    return this.owner && this.repo && this.token;
+  },
+  clearCreds() {
+    this.owner = ''; this.repo = ''; this.token = '';
+    localStorage.removeItem('gh_owner');
+    localStorage.removeItem('gh_repo');
+    localStorage.removeItem('gh_token');
+    this.shaCache = {};
+  },
+  async req(method, path, body) {
+    const url = `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${path}`;
+    const opts = { method, headers: { 'Authorization': `Bearer ${this.token}`, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' } };
+    if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    const r = await fetch(url, opts);
+    if (!r.ok && r.status !== 404) {
+      const err = await r.text();
+      throw new Error(`${r.status} ${err.slice(0,200)}`);
     }
-  } catch (e) {}
-}
-
-async function loadExtraBooksFromFile() {
-  if (!dirHandle) return;
-  try {
-    const memDir = await dirHandle.getDirectoryHandle('memory');
-    const fh = await memDir.getFileHandle('books.json');
-    const file = await fh.getFile();
-    const data = JSON.parse(await file.text());
-    if (data && data.extras) {
-      data.extras.forEach(b => {
-        if (b && b.name && !PLAN[b.name]) {
-          PLAN[b.name] = {
-            color: b.color || getBookColor(b.name),
-            total: b.total || 0, startPage: b.startPage || 0, endPage: b.endPage || 0,
-            days: {}, isExtra: true
-          };
-        }
-        saveExtraBookLocal(b.name, b.color || getBookColor(b.name));
-      });
+    if (r.status === 404) return { _404: true };
+    return r.json();
+  },
+  b64encode(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+  },
+  b64decode(b64) {
+    return decodeURIComponent(escape(atob(b64.replace(/\s/g, ''))));
+  },
+  async getFile(path) {
+    const r = await this.req('GET', path);
+    if (r._404) return { exists: false, text: '', sha: null };
+    this.shaCache[path] = r.sha;
+    return { exists: true, text: this.b64decode(r.content), sha: r.sha };
+  },
+  async putFile(path, text, message) {
+    let sha = this.shaCache[path];
+    if (sha === undefined) {
+      const cur = await this.getFile(path);
+      sha = cur.exists ? cur.sha : null;
     }
-  } catch (e) { /* file doesn't exist yet */ }
-}
-
-async function saveExtraBookToFile(name, color) {
-  if (!dirHandle) return;
-  try {
-    const memDir = await dirHandle.getDirectoryHandle('memory', { create: true });
-    let extras = [];
-    try {
-      const fh = await memDir.getFileHandle('books.json');
-      const file = await fh.getFile();
-      const data = JSON.parse(await file.text());
-      extras = (data && data.extras) || [];
-    } catch (e) {}
-    if (!extras.find(b => b.name === name)) extras.push({ name, color });
-    const fh2 = await memDir.getFileHandle('books.json', { create: true });
-    const writable = await fh2.createWritable();
-    await writable.write(JSON.stringify({ extras }, null, 2));
-    await writable.close();
-  } catch (e) { console.error('save books.json failed', e); }
-}
-
-async function addNewBook(askName) {
-  const name = (askName != null) ? askName : prompt('새 책 이름을 입력하세요:');
-  if (!name || !name.trim()) return null;
-  const trimmed = name.trim();
-  if (PLAN[trimmed]) return trimmed;
-  const color = getBookColor(trimmed);
-  PLAN[trimmed] = { color, total: 0, startPage: 0, endPage: 0, days: {}, isExtra: true };
-  saveExtraBookLocal(trimmed, color);
-  await saveExtraBookToFile(trimmed, color);
-  return trimmed;
-}
-
-function populateBookDropdown() {
-  const sBook = document.getElementById('sBook');
-  if (!sBook) return;
-  const current = sBook.value;
-  const opts = Object.keys(PLAN).map(name => {
-    const display = name === '이글턴' ? '이글턴 (신의 죽음과 문화)' : name;
-    return `<option value="${name}">${display}</option>`;
-  });
-  opts.push('<option value="__add_new__" style="font-style: italic;">+ 새 책 추가...</option>');
-  sBook.innerHTML = opts.join('');
-  if (current && PLAN[current]) sBook.value = current;
-}
-
-const today = new Date();
-todayStr = fmtDate(today);
-document.getElementById('todayLabel').textContent = `오늘: ${fmtTodayKR(today)}`;
-document.getElementById('todayDate').textContent = fmtTodayKR(today);
-
-document.getElementById('sStart').value = nowTime();
-document.getElementById('sEnd').value = nowTime();
-document.getElementById('sFocus').addEventListener('input', e => {
-  document.getElementById('sFocusVal').textContent = e.target.value;
-});
-
-function renderChart() {
-  const ctx = document.getElementById('weekChart');
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: DAY_LABELS,
-      datasets: Object.entries(PLAN).map(([name, p]) => ({
-        label: name,
-        data: DAYS.map(d => p.days[d] || 0),
-        backgroundColor: p.color,
-        borderColor: p.color, borderWidth: 0.5,
-        stack: 's'
-      }))
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { stacked: true, ticks: { autoSkip: false } },
-        y: { stacked: true, beginAtZero: true,
-             ticks: { callback: v => Math.round(v) + 'p' } }
-      }
-    }
-  });
-}
-
-function getCurrentPage(book) {
-  const p = PLAN[book];
-  const v = localStorage.getItem('curPage:' + book);
-  return v != null ? Number(v) : p.startPage;
-}
-function setCurrentPage(book, page) {
-  localStorage.setItem('curPage:' + book, String(page));
-}
-
-const BOOK_DEADLINES = {
-  '허조그': '토 5/16',
-  '소설의기술(쿤데라)': '토 5/16',
-  '미메시스': '화 5/12 / 토 5/16',
-  '배신당한 유언들(쿤데라)': '토 5/16',
-  '이글턴': '수 5/13',
-  '계몽주의 개론': '토 5/16'
+    const body = { message: message || `Update ${path}`, content: this.b64encode(text) };
+    if (sha) body.sha = sha;
+    const r = await this.req('PUT', path, body);
+    if (r.content && r.content.sha) this.shaCache[path] = r.content.sha;
+    return r;
+  }
 };
 
-const bookPagesRead = {};
-
-function renderBooks() {
-  const grid = document.getElementById('booksGrid');
-  grid.innerHTML = '';
-  Object.entries(PLAN).forEach(([name, p]) => {
-    const unit = getBookUnit(name);
-    p.unit = unit;
-    const cur = getCurrentPage(name);
-    const pagesRead = bookPagesRead[name] || 0;
-    const total = p.total || 0;
-    const unitLabel = unit === '%' ? '%' : 'p';
-    const pct = total > 0 ? Math.min(100, Math.round((pagesRead / total) * 100)) : 0;
-    const deadline = BOOK_DEADLINES[name] || '—';
-    const card = document.createElement('div');
-    card.className = 'book-card';
-    card.style.borderLeftColor = p.color;
-    const btnStyle = (active) => `padding:2px 8px; font-size:10px; border:1px solid var(--border); border-radius:4px; cursor:pointer; background:${active ? p.color : 'var(--surface)'}; color:${active ? 'white' : 'var(--text-2)'};`;
-    card.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-        <div class="name">${name}${unit === '%' ? ' <span style="font-size:10px; color:var(--text-3); font-weight:400;">(e-book)</span>' : ''}</div>
-        <div style="display:flex; gap:3px;">
-          <button class="book-unit-btn" data-book="${name}" data-unit="p" style="${btnStyle(unit === 'p')}">p</button>
-          <button class="book-unit-btn" data-book="${name}" data-unit="%" style="${btnStyle(unit === '%')}">%</button>
-        </div>
-      </div>
-      <div class="meta">목표 ${total}${unitLabel} · 마감 ${deadline}</div>
-      <div class="progress-track"><div class="progress-bar" style="width:${pct}%; background:${p.color};"></div></div>
-      <div class="progress-text"><span>${pagesRead}/${total}${unitLabel}</span><span>${pct}%</span></div>
-      <div style="font-size:11px; color:var(--text-3); margin-top:6px; display:flex; align-items:center; gap:6px;">
-        <span>현재 ${unit === '%' ? '%' : '페이지'}</span>
-        <input type="number" class="page-input" data-book="${name}" value="${cur}" min="0" ${unit === '%' ? 'max="100"' : ''} placeholder="${unit === '%' ? '0-100' : '물리적 페이지'}" style="flex:1;" />
-      </div>
-    `;
-    grid.appendChild(card);
-  });
-  grid.querySelectorAll('.page-input').forEach(inp => {
-    inp.addEventListener('change', () => {
-      setCurrentPage(inp.dataset.book, Number(inp.value));
-      renderBooks();
-    });
-  });
-  grid.querySelectorAll('.book-unit-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const book = btn.dataset.book;
-      const unit = btn.dataset.unit;
-      if (getBookUnit(book) === unit) return;
-      if (unit === '%' && !confirm(`"${book}"을 e-book(%)으로 전환하면 total이 100%로 재설정됩니다. 진행할까요?`)) return;
-      setBookUnit(book, unit);
-      renderBooks();
-      try { document.getElementById('sBook').dispatchEvent(new Event('change')); } catch(e){}
-    });
-  });
-}
-
-function renderHabits() {
-  const row = document.getElementById('habitsRow');
-  row.innerHTML = '';
-  HABITS.forEach((h, i) => {
-    const state = localStorage.getItem(`habit:${todayStr}:${i}`) || 'none';
-    const el = document.createElement('div');
-    el.className = 'habit ' + (state === 'done' ? 'done' : state === 'partial' ? 'partial' : state === 'missed' ? 'missed' : '');
-    el.textContent = (state === 'done' ? '✓ ' : state === 'partial' ? '🔸 ' : state === 'missed' ? '✗ ' : '○ ') + h;
-    el.addEventListener('click', () => {
-      const seq = ['none','done','partial','missed'];
-      const next = seq[(seq.indexOf(state)+1) % seq.length];
-      localStorage.setItem(`habit:${todayStr}:${i}`, next);
-      renderHabits();
-      saveHabitsFile();
-    });
-    row.appendChild(el);
-  });
-}
-
-async function saveHabitsFile() {
-  if (!dirHandle) return;
-  try {
-    const fh = await dirHandle.getFileHandle('habits.md');
-    const file = await fh.getFile();
-    let text = await file.text();
-    const dateCol = `5/${today.getDate()}`;
-    const dayMap = { '5/4':'(월)','5/5':'(화)','5/6':'(수)','5/7':'(목)','5/8':'(금)','5/9':'(토)','5/10':'(일)' };
-    const colHeader = `${dateCol} ${dayMap[dateCol] || ''}`;
-    const colIdx = DAYS.indexOf(dateCol);
-    if (colIdx === -1) return;
-    const lines = text.split('\n');
-    HABITS.forEach((_, i) => {
-      const rowPrefix = `| ${i+1}.`;
-      const lineIdx = lines.findIndex(l => l.startsWith(rowPrefix));
-      if (lineIdx === -1) return;
-      const cells = lines[lineIdx].split('|').map(c => c);
-      const targetCellIdx = colIdx + 2;
-      if (cells.length > targetCellIdx) {
-        const state = localStorage.getItem(`habit:${todayStr}:${i}`) || 'none';
-        const sym = state === 'done' ? ' ✅ ' : state === 'partial' ? ' 🔸 ' : state === 'missed' ? ' ❌ ' : '   ';
-        cells[targetCellIdx] = sym;
-        lines[lineIdx] = cells.join('|');
-      }
-    });
-    const writable = await fh.createWritable();
-    await writable.write(lines.join('\n'));
-    await writable.close();
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-let todaysSessions = [];
-async function loadSessions() {
-  const list = document.getElementById('sessionList');
-  list.innerHTML = '<div class="session-empty">로딩 중...</div>';
-  if (!dirHandle) {
-    list.innerHTML = '<div class="session-empty">폴더 연결 후 표시됩니다</div>';
-    return;
-  }
-  try {
-    const memDir = await dirHandle.getDirectoryHandle('memory');
-    const insDir = await memDir.getDirectoryHandle('insights');
-    const fh = await insDir.getFileHandle(`${todayStr}.md`, { create: true });
-    const file = await fh.getFile();
-    const text = await file.text();
-    const sessions = parseSessions(text);
-    todaysSessions = sessions;
-    if (sessions.length === 0) {
-      list.innerHTML = '<div class="session-empty">아직 세션 없음 — 오른쪽 폼으로 첫 세션을 기록해보세요</div>';
-    } else {
-      list.innerHTML = '';
-      sessions.forEach((s, idx) => {
-        const div = document.createElement('div');
-        div.className = 'session-item';
-        const badgeColors = { '읽기': '#7F77DD', '정리': '#1D9E75', '쓰기': '#D85A30' };
-        const badgeColor = badgeColors[s.activity] || '#7F77DD';
-        const escape = (t) => (t || '').replace(/</g, '&lt;');
-        div.innerHTML = `
-          <div class="head">
-            <span style="font-weight:500;">
-              <span style="display:inline-block; padding:1px 6px; font-size:10px; background:${badgeColor}; color:white; border-radius:3px; margin-right:6px; vertical-align:middle;">${s.activity || '읽기'}</span>
-              ${escape(s.book)}
-            </span>
-            <span style="display:flex; align-items:center; gap:6px;">
-              <span class="time">${s.start}-${s.end} (${s.minutes}분)</span>
-              <button class="sess-edit" data-idx="${idx}" title="수정" style="background:transparent; border:none; cursor:pointer; padding:2px 5px; font-size:13px; color:var(--text-3); border-radius:4px; line-height:1;">✎</button>
-              <button class="sess-del" data-idx="${idx}" title="삭제" style="background:transparent; border:none; cursor:pointer; padding:2px 5px; font-size:13px; color:var(--text-3); border-radius:4px; line-height:1;">🗑</button>
-            </span>
-          </div>
-          <div class="body">${s.progress ? escape(s.progress) + ' · ' : ''}집중 ${s.focus || '-'}/5${s.keywords ? ' · 🔑 ' + escape(s.keywords) : ''}${s.memo ? ' · ' + escape(s.memo) : ''}</div>
-          ${(s.phone || s.distraction) ? `<div style="margin-top:6px; padding:8px 10px; background:#FAEEDA; border-left:2px solid #BA7517; border-radius:0 4px 4px 0; font-size:12px; line-height:1.5; color:#412402;">${s.phone ? `<span style="display:inline-block; padding:1px 6px; font-size:10px; background:#BA7517; color:white; border-radius:3px; margin-right:6px; vertical-align:middle;">📵 ${s.phone}회</span>` : ''}${s.distraction ? `<span style="color:#633806;">딴생각:</span> ${escape(s.distraction)}` : ''}</div>` : ''}
-          ${s.reflection ? `<div style="margin-top:6px; padding:8px 10px; background:var(--surface-2); border-left:2px solid ${badgeColor}; border-radius:0 4px 4px 0; font-size:12px; line-height:1.5; white-space:pre-wrap;">${escape(s.reflection)}</div>` : ''}
-        `;
-        list.appendChild(div);
-      });
-      list.querySelectorAll('.sess-edit').forEach(btn => {
-        btn.addEventListener('click', () => openEditModal(Number(btn.dataset.idx)));
-      });
-      list.querySelectorAll('.sess-del').forEach(btn => {
-        btn.addEventListener('click', () => deleteSession(Number(btn.dataset.idx)));
-      });
-    }
-  } catch (e) {
-    list.innerHTML = '<div class="session-empty">로그 파일을 읽을 수 없음 (' + e.message + ')</div>';
-  }
-}
-
+// ===== Parsers =====
 function parseSessions(text) {
   const result = [];
   const re = /### (\d{1,2}:\d{2})-(\d{1,2}:\d{2}) \((\d+)분\) — (.+?)\n((?:[ ]*- .+\n?| {2,}.+\n?)+)/g;
@@ -817,1009 +356,408 @@ function parseSessions(text) {
     const pctM = (progress || '').match(/(\d+)%\s*→\s*(\d+)%/);
     const startPage = pageM ? parseInt(pageM[1]) : (pctM ? parseInt(pctM[1]) : null);
     const endPage = pageM ? parseInt(pageM[2]) : (pctM ? parseInt(pctM[2]) : null);
-    const sessionUnit = pageM ? 'p' : (pctM ? '%' : 'p');
+    const unit = pageM ? 'p' : (pctM ? '%' : 'p');
     const focus = (block.match(/- 집중: (\d)\/5/) || [])[1];
-    const phoneMatch = (block.match(/- 폰: (\d+)회/) || []);
-    const phone = phoneMatch[1] ? parseInt(phoneMatch[1]) : 0;
-    const distraction = (block.match(/- 딴생각: (.+)/) || [])[1] || '';
-    const keywords = (block.match(/- 키워드: (.+)/) || [])[1];
     const memo = (block.match(/- 메모: (.+)/) || [])[1];
+    const keywords = (block.match(/- 키워드: (.+)/) || [])[1];
     const reflMatch = block.match(/- 정리:\s*([\s\S]+?)(?=\n- |$)/);
     const reflection = reflMatch ? reflMatch[1].trim() : '';
-    result.push({
-      start: m[1], end: m[2], minutes: m[3],
-      book, activity, progress, focus, phone, distraction, keywords, memo, reflection,
-      startPage, endPage, unit: sessionUnit,
-      raw: titleRaw,
-      rawBlock: m[0]
-    });
+    result.push({ start: m[1], end: m[2], minutes: m[3], book, activity, progress, focus, memo, keywords, reflection, startPage, endPage, unit, rawBlock: m[0] });
   }
   return result;
 }
-
-function buildSessionBlock(s) {
-  const minutes = (() => {
-    const [sh,sm] = s.start.split(':').map(Number);
-    const [eh,em] = s.end.split(':').map(Number);
-    return (eh*60+em) - (sh*60+sm);
-  })();
-  const unit = s.unit || getBookUnit(s.book) || 'p';
-  let progressLine = '';
-  if (s.endPage !== null && s.endPage !== undefined && s.endPage !== '') {
-    const sp = (s.startPage !== null && s.startPage !== '' && !isNaN(Number(s.startPage))) ? Number(s.startPage) : Number(s.endPage);
-    const ep = Number(s.endPage);
-    const delta = ep - sp;
-    if (unit === '%') {
-      progressLine = `- 진행: ${sp}% → ${ep}% (${delta>=0?'+':''}${delta}%)\n`;
-    } else {
-      progressLine = `- 진행: p.${sp} → p.${ep} (${delta>=0?'+':''}${delta}p)\n`;
-    }
-  }
-  const reflBlock = s.reflection
-    ? `- 정리:\n${s.reflection.split('\n').map(l => '  ' + l).join('\n')}\n`
-    : '';
-  return `### ${s.start}-${s.end} (${minutes}분) — ${s.book} [${s.activity}]\n` +
-    progressLine +
-    `- 집중: ${s.focus}/5\n` +
-    (s.phone && Number(s.phone) > 0 ? `- 폰: ${Number(s.phone)}회\n` : '') +
-    (s.distraction ? `- 딴생각: ${s.distraction}\n` : '') +
-    (s.keywords ? `- 키워드: ${s.keywords}\n` : '') +
-    (s.memo ? `- 메모: ${s.memo}\n` : '') +
-    reflBlock;
-}
-
-async function rewriteTodaysSession(oldBlock, newBlock) {
-  if (!dirHandle) { toast('폴더 미연결', false); return false; }
-  try {
-    const memDir = await dirHandle.getDirectoryHandle('memory');
-    const insDir = await memDir.getDirectoryHandle('insights');
-    const fh = await insDir.getFileHandle(`${todayStr}.md`);
-    const file = await fh.getFile();
-    let text = await file.text();
-    if (!text.includes(oldBlock)) {
-      toast('원본 블록을 찾을 수 없음 (파일이 외부에서 변경되었을 수 있음)', false);
-      return false;
-    }
-    text = text.replace(oldBlock, newBlock);
-    const writable = await fh.createWritable();
-    await writable.write(text);
-    await writable.close();
-    return true;
-  } catch (e) {
-    toast('수정 실패: ' + e.message, false);
-    return false;
-  }
-}
-
-let editingIdx = -1;
-function openEditModal(idx) {
-  const s = todaysSessions[idx];
-  if (!s) return;
-  editingIdx = idx;
-  document.getElementById('emActivity').value = s.activity || '읽기';
-  document.getElementById('emBook').value = s.book || '';
-  document.getElementById('emStart').value = s.start || '';
-  document.getElementById('emEnd').value = s.end || '';
-  document.getElementById('emStartPage').value = (s.startPage !== null && s.startPage !== undefined) ? s.startPage : '';
-  document.getElementById('emEndPage').value = (s.endPage !== null && s.endPage !== undefined) ? s.endPage : '';
-  document.getElementById('emFocus').value = s.focus || 3;
-  document.getElementById('emFocusVal').textContent = s.focus || 3;
-  document.getElementById('emPhone').value = s.phone || '';
-  document.getElementById('emDistraction').value = s.distraction || '';
-  document.getElementById('emKeywords').value = s.keywords || '';
-  document.getElementById('emMemo').value = s.memo || '';
-  document.getElementById('emReflection').value = s.reflection || '';
-  document.getElementById('editModalOverlay').style.display = 'flex';
-}
-function closeEditModal() {
-  document.getElementById('editModalOverlay').style.display = 'none';
-  editingIdx = -1;
-}
-document.getElementById('emClose').addEventListener('click', closeEditModal);
-document.getElementById('emCancel').addEventListener('click', closeEditModal);
-document.getElementById('editModalOverlay').addEventListener('click', (e) => {
-  if (e.target.id === 'editModalOverlay') closeEditModal();
-});
-document.getElementById('emFocus').addEventListener('input', (e) => {
-  document.getElementById('emFocusVal').textContent = e.target.value;
-});
-
-document.getElementById('emSave').addEventListener('click', async () => {
-  if (editingIdx < 0) return;
-  const orig = todaysSessions[editingIdx];
-  const activity = document.getElementById('emActivity').value;
-  const book = document.getElementById('emBook').value.trim();
-  const start = document.getElementById('emStart').value;
-  const end = document.getElementById('emEnd').value;
-  const startPage = document.getElementById('emStartPage').value;
-  const endPage = document.getElementById('emEndPage').value;
-  const focus = document.getElementById('emFocus').value;
-  const phone = document.getElementById('emPhone').value;
-  const distraction = document.getElementById('emDistraction').value.trim();
-  const keywords = document.getElementById('emKeywords').value.trim();
-  const memo = document.getElementById('emMemo').value.trim();
-  const reflection = document.getElementById('emReflection').value.trim();
-  if (!book || !start || !end) { toast('책·시간은 필수', false); return; }
-  const minutes = diffMin(start, end);
-  if (minutes <= 0) { toast('시간이 이상해요', false); return; }
-  const newBlock = buildSessionBlock({
-    activity, book, start, end,
-    startPage: startPage === '' ? null : Number(startPage),
-    endPage: endPage === '' ? null : Number(endPage),
-    focus, phone, distraction, keywords, memo, reflection
-  });
-  const ok = await rewriteTodaysSession(orig.rawBlock, newBlock);
-  if (ok) {
-    closeEditModal();
-    toast('수정 완료');
-    await loadSessions();
-    await renderActualChart();
-    await renderDistractionPanel();
-    await renderReflectionPanel();
-    await loadDailyLog();
-    await renderCompare();
-  }
-});
-
-document.getElementById('emDelete').addEventListener('click', async () => {
-  if (editingIdx < 0) return;
-  if (!confirm('이 세션을 삭제할까요? 되돌릴 수 없습니다.')) return;
-  const orig = todaysSessions[editingIdx];
-  const ok = await rewriteTodaysSession(orig.rawBlock, '');
-  if (ok) {
-    closeEditModal();
-    toast('삭제 완료');
-    await loadSessions();
-    await renderActualChart();
-    await renderDistractionPanel();
-    await renderReflectionPanel();
-    await loadDailyLog();
-    await renderCompare();
-  }
-});
-
-async function deleteSession(idx) {
-  const s = todaysSessions[idx];
-  if (!s) return;
-  if (!confirm(`"${s.book}" ${s.start}-${s.end} 세션을 삭제할까요?`)) return;
-  const ok = await rewriteTodaysSession(s.rawBlock, '');
-  if (ok) {
-    toast('삭제 완료');
-    await loadSessions();
-    await renderActualChart();
-    await renderDistractionPanel();
-    await renderReflectionPanel();
-    await loadDailyLog();
-    await renderCompare();
-  }
-}
-
-async function appendSessionToFile(entry) {
-  if (!dirHandle) {
-    toast('폴더 미연결 — 메모는 저장되었으나 파일에는 못 씀', false);
-    return false;
-  }
-  try {
-    const memDir = await dirHandle.getDirectoryHandle('memory', { create: true });
-    const insDir = await memDir.getDirectoryHandle('insights', { create: true });
-    const fh = await insDir.getFileHandle(`${todayStr}.md`, { create: true });
-    const file = await fh.getFile();
-    let text = await file.text();
-    if (text.length === 0) {
-      text = `# ${todayStr} (${['일','월','화','수','목','금','토'][today.getDay()]}) — 인사이트 로그\n\n## 세션 로그\n\n## 인사이트\n`;
-    }
-    if (!text.includes('## 세션 로그')) {
-      text += '\n## 세션 로그\n';
-    }
-    const insertPoint = text.indexOf('## 세션 로그') + '## 세션 로그'.length;
-    const before = text.slice(0, insertPoint);
-    const after = text.slice(insertPoint);
-    text = before + '\n\n' + entry + after;
-    const writable = await fh.createWritable();
-    await writable.write(text);
-    await writable.close();
-    return true;
-  } catch (e) {
-    toast('파일 쓰기 실패: ' + e.message, false);
-    return false;
-  }
-}
-
-loadExtraBooksFromStorage();
-populateBookDropdown();
-
-document.getElementById('sBook').addEventListener('change', async (e) => {
-  if (e.target.value === '__add_new__') {
-    const newName = await addNewBook();
-    populateBookDropdown();
-    if (newName) {
-      e.target.value = newName;
-      renderBooks();
-      if (typeof renderActualChart === 'function') renderActualChart();
-    } else {
-      e.target.value = Object.keys(PLAN)[0];
-    }
-  }
-  const book = e.target.value;
-  const cur = getCurrentPage(book);
-  document.getElementById('sStartPage').value = cur;
-  const unit = getBookUnit(book);
-  const startLabel = document.getElementById('sStartLabel');
-  const endLabel = document.getElementById('sEndLabel');
-  const sp = document.getElementById('sStartPage');
-  const ep = document.getElementById('sEndPage');
-  if (unit === '%') {
-    if (startLabel) startLabel.textContent = '시작 % (e-book)';
-    if (endLabel) endLabel.textContent = '종료 %';
-    sp.placeholder = '0-100'; sp.max = 100;
-    ep.placeholder = '0-100'; ep.max = 100;
-  } else {
-    if (startLabel) startLabel.textContent = '시작 페이지';
-    if (endLabel) endLabel.textContent = '종료 페이지';
-    sp.placeholder = '자동 채움 (쓰기는 비워도 OK)'; sp.removeAttribute('max');
-    ep.placeholder = ''; ep.removeAttribute('max');
-  }
-});
-document.getElementById('sBook').dispatchEvent(new Event('change'));
-
-function generateFeedback(s) {
-  const focus = Number(s.focus);
-  const minutes = s.minutes;
-  const delta = s.hasPages ? (s.endPage - s.startPage) : 0;
-  const activity = s.activity || '읽기';
-  const lines = [];
-  // Activity-aware opening
-  if (activity === '쓰기') {
-    if (minutes >= 30) lines.push(`쓰기 ${minutes}분 — 출력 시간 자체가 가장 귀한 자산이에요. 이번 주 첫 출력이라면 균형이 잡혀가는 신호.`);
-    else lines.push(`쓰기 ${minutes}분 — 짧아도 출력은 출력. 입력만 누적되면 글쓰기 근육이 굳어요.`);
-  } else if (activity === '정리') {
-    lines.push(`정리 ${minutes}분 — 읽은 것을 자기 언어로 옮기는 시간. 6개월 후 글쓰기로 갈 때 가장 빛나는 자료가 됩니다.`);
-  } else {
-    if (focus >= 5) lines.push("집중 5/5 — 최고 페이스. 시간·장소·컨디션 메모해두면 재현 가능.");
-    else if (focus === 4) lines.push("집중 4/5 — 안정적인 세션.");
-    else if (focus === 3) lines.push("집중 3/5 — 일단 읽었으면 충분. 부분 달성도 1급 시민.");
-    else lines.push(`집중 ${focus}/5 — 환경·시간대·책 난이도 어디가 발목인지 한번 점검.`);
-  }
-  // Pages-based (읽기·정리)
-  if (s.hasPages) {
-    if (delta >= 30) lines.push(`${delta}p — 한 호흡으로 잘 가셨네요.`);
-    else if (delta >= 15) lines.push(`${delta}p — 적당한 한 세션.`);
-    else if (delta >= 5) lines.push(`${delta}p — 작아 보여도 누적이 자산이에요.`);
-    else if (delta > 0) lines.push(`${delta}p — 시작이 가장 어려운데 그걸 넘으셨어요.`);
-  }
-  // Duration
-  if (minutes >= 60 && activity !== '쓰기') lines.push(`${minutes}분 지속 — 집중력 자산.`);
-  else if (minutes < 15 && delta > 0) lines.push(`${minutes}분 짧은 세션 — 짬짬이 누적이 의외로 강력.`);
-  // Reflection bonus
-  if (s.reflection && s.reflection.length > 30) lines.push("정리 항목까지 채우셨네요 — 이게 진짜 학습 자산이에요. 글쓰기 진입 시 그대로 자료가 됩니다.");
-  return lines.slice(0, 3).join(' ');
-}
-
-function showFeedback(text) {
-  const box = document.getElementById('feedbackBox');
-  if (!box) return;
-  box.textContent = text;
-  box.style.display = 'block';
-}
-
-document.getElementById('saveSession').addEventListener('click', async () => {
-  const book = document.getElementById('sBook').value;
-  const activity = document.getElementById('sActivity').value || '읽기';
-  const start = document.getElementById('sStart').value;
-  const end = document.getElementById('sEnd').value;
-  const spRaw = document.getElementById('sStartPage').value;
-  const epRaw = document.getElementById('sEndPage').value;
-  const focus = document.getElementById('sFocus').value;
-  const phoneRaw = document.getElementById('sPhone').value;
-  const phone = phoneRaw === '' ? 0 : Math.max(0, Number(phoneRaw));
-  const distraction = document.getElementById('sDistraction').value.trim();
-  const keywords = document.getElementById('sKeywords').value.trim();
-  const memo = document.getElementById('sMemo').value.trim();
-  const reflection = document.getElementById('sReflection').value.trim();
-  if (!start || !end) { toast('시각은 필수', false); return; }
-  const minutes = diffMin(start, end);
-  if (minutes <= 0) { toast('시간이 이상해요', false); return; }
-  const isWrite = activity === '쓰기';
-  const hasPages = epRaw !== '';
-  if (!isWrite && !hasPages) { toast('읽기·정리는 종료값 필요', false); return; }
-  const unit = getBookUnit(book);
-  let startPage = 0, endPage = 0, delta = 0, progressLine = '';
-  if (hasPages) {
-    startPage = Number(spRaw || getCurrentPage(book));
-    endPage = Number(epRaw);
-    delta = endPage - startPage;
-    if (unit === '%') {
-      progressLine = `- 진행: ${startPage}% → ${endPage}% (${delta >= 0 ? '+' : ''}${delta}%)\n`;
-    } else {
-      progressLine = `- 진행: p.${startPage} → p.${endPage} (${delta >= 0 ? '+' : ''}${delta}p)\n`;
-    }
-  }
-  const reflectionBlock = reflection
-    ? `- 정리:\n${reflection.split('\n').map(l => '  ' + l).join('\n')}\n`
-    : '';
-  const entry = `### ${start}-${end} (${minutes}분) — ${book} [${activity}]\n` +
-    progressLine +
-    `- 집중: ${focus}/5\n` +
-    (phoneRaw !== '' ? `- 폰: ${phone}회\n` : '') +
-    (distraction ? `- 딴생각: ${distraction}\n` : '') +
-    (keywords ? `- 키워드: ${keywords}\n` : '') +
-    (memo ? `- 메모: ${memo}\n` : '') +
-    reflectionBlock;
-  const ok = await appendSessionToFile(entry);
-  if (ok) {
-    if (hasPages && !isWrite) setCurrentPage(book, endPage);
-    document.getElementById('sEndPage').value = '';
-    document.getElementById('sMemo').value = '';
-    document.getElementById('sKeywords').value = '';
-    document.getElementById('sReflection').value = '';
-    document.getElementById('sPhone').value = '';
-    document.getElementById('sDistraction').value = '';
-    document.getElementById('sStart').value = end;
-    document.getElementById('sEnd').value = nowTime();
-    renderBooks();
-    document.getElementById('sBook').dispatchEvent(new Event('change'));
-    await loadSessions();
-    showFeedback(generateFeedback({ book, activity, minutes, startPage, endPage, focus, memo, reflection, hasPages }));
-    await renderActualChart();
-    await renderDistractionPanel();
-    await renderReflectionPanel();
-    await loadDailyLog();
-    await renderCompare();
-    toast('세션 저장 완료');
-  }
-});
-
-// ===== 일과 (daily log) =====
-const DAILY_AXES = [
-  { key: 'sleep', label: '수면', input: 'dl_sleep' },
-  { key: 'morning', label: '아침', input: 'dl_morning' },
-  { key: 'lunch', label: '점심', input: 'dl_lunch' },
-  { key: 'dinner', label: '저녁', input: 'dl_dinner' },
-  { key: 'exercise', label: '운동', input: 'dl_exercise' }
-];
 
 function parseDailyLog(text) {
-  const result = {};
+  const r = {};
   const m = text.match(/## 일과\n([\s\S]*?)(?=\n## |$)/);
-  if (!m) return result;
-  const body = m[1];
-  DAILY_AXES.forEach(a => {
-    const re = new RegExp(`- \\*\\*${a.label}\\*\\*:\\s*(.+)`);
-    const m2 = body.match(re);
-    if (m2) result[a.key] = m2[1].trim();
+  if (!m) return r;
+  ['수면','아침','점심','저녁','운동'].forEach(label => {
+    const re = new RegExp(`- \\*\\*${label}\\*\\*:\\s*(.+)`);
+    const m2 = m[1].match(re);
+    if (m2) r[label] = m2[1].trim();
   });
-  return result;
+  return r;
 }
 
-const WEEK1_DAYS = ['5/4','5/5','5/6','5/7','5/8','5/9','5/10'];
-
-async function loadWeekStats(weekDays) {
-  if (!dirHandle) return null;
-  try {
-    const memDir = await dirHandle.getDirectoryHandle('memory');
-    const insDir = await memDir.getDirectoryHandle('insights');
-    const stats = {
-      totalPages: 0, totalSessions: 0, totalMinutes: 0, activeDays: 0,
-      byActivity: { '읽기': 0, '정리': 0, '쓰기': 0 },
-      focusSum: 0, focusCount: 0
-    };
-    for (const day of weekDays) {
-      const [m, d] = day.split('/').map(Number);
-      const dateStr = `2026-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      try {
-        const fh = await insDir.getFileHandle(`${dateStr}.md`);
-        const file = await fh.getFile();
-        const text = await file.text();
-        const sessions = parseSessions(text);
-        if (sessions.length > 0) stats.activeDays++;
-        sessions.forEach(s => {
-          stats.totalSessions++;
-          stats.totalMinutes += Number(s.minutes || 0);
-          const dm = (s.progress || '').match(/\(([+-]?\d+)p\)/);
-          const delta = dm ? Math.max(0, parseInt(dm[1])) : 0;
-          stats.totalPages += delta;
-          const act = s.activity || '읽기';
-          stats.byActivity[act] = (stats.byActivity[act] || 0) + Number(s.minutes || 0);
-          if (s.focus) { stats.focusSum += Number(s.focus); stats.focusCount++; }
-        });
-      } catch (e) { /* file not exists */ }
-    }
-    return stats;
-  } catch (e) { return null; }
+// ===== Data ops =====
+function dailyFilename() {
+  return `${todayStr}.md`;
 }
 
-let compareChart = null;
-async function renderCompare() {
-  const tableEl = document.getElementById('compareTable');
-  const statsEl = document.getElementById('compareStats');
-  if (!tableEl) return;
-  if (!dirHandle) {
-    tableEl.innerHTML = '<div class="session-empty">폴더 연결 후 표시됩니다</div>';
-    if (statsEl) statsEl.textContent = '';
-    return;
+async function loadToday() {
+  const path = dailyFilename();
+  const f = await gh.getFile(path);
+  return { text: f.text || '', sha: f.sha, sessions: parseSessions(f.text || ''), daily: parseDailyLog(f.text || '') };
+}
+
+async function appendSession(entry) {
+  const path = dailyFilename();
+  const cur = await gh.getFile(path);
+  let text = cur.text;
+  if (!text) {
+    const dow = ['일','월','화','수','목','금','토'][today.getDay()];
+    text = `# ${todayStr} (${dow}) — 인사이트 로그\n\n## 세션 로그\n\n## 인사이트\n`;
   }
-  const w1 = await loadWeekStats(WEEK1_DAYS);
-  const w2 = await loadWeekStats(DAYS);
-  if (!w1 || !w2) return;
-
-  const ctx = document.getElementById('compareChart');
-  if (compareChart) { compareChart.destroy(); compareChart = null; }
-  if (ctx) {
-    compareChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['페이지', '세션', '시간(분)', '활성일'],
-        datasets: [
-          { label: '1주차', data: [w1.totalPages, w1.totalSessions, w1.totalMinutes, w1.activeDays], backgroundColor: '#B4B2A9', borderColor: '#5F5E5A', borderWidth: 0.5 },
-          { label: '2주차', data: [w2.totalPages, w2.totalSessions, w2.totalMinutes, w2.activeDays], backgroundColor: '#7F77DD', borderColor: '#26215C', borderWidth: 0.5 }
-        ]
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 12, boxHeight: 12 } } },
-        scales: { x: { beginAtZero: true } }
-      }
-    });
-  }
-
-  const fmtChange = (a, b) => {
-    if (a === 0 && b === 0) return '—';
-    const diff = b - a;
-    if (a === 0) return `+${diff}`;
-    const pct = Math.round(diff / a * 100);
-    return `${diff >= 0 ? '+' : ''}${diff} <span style="color:var(--text-3); font-size:11px;">(${pct >= 0 ? '+' : ''}${pct}%)</span>`;
-  };
-  const fmtTime = (m) => m >= 60 ? `${Math.floor(m/60)}h ${m%60}m` : `${m}m`;
-  const f1 = w1.focusCount > 0 ? (w1.focusSum / w1.focusCount) : null;
-  const f2 = w2.focusCount > 0 ? (w2.focusSum / w2.focusCount) : null;
-  tableEl.innerHTML = `
-    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-      <thead>
-        <tr style="border-bottom: 1px solid var(--border); color: var(--text-3); font-size: 11px;">
-          <th style="text-align: left; padding: 8px 6px; font-weight: 500;">지표</th>
-          <th style="text-align: right; padding: 8px 6px; font-weight: 500;">1주차</th>
-          <th style="text-align: right; padding: 8px 6px; font-weight: 500;">2주차</th>
-          <th style="text-align: right; padding: 8px 6px; font-weight: 500;">변화</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr style="border-bottom: 1px solid var(--border);"><td style="padding: 8px 6px;">총 페이지</td><td style="text-align: right; color: var(--text-2);">${w1.totalPages}p</td><td style="text-align: right; font-weight: 500;">${w2.totalPages}p</td><td style="text-align: right;">${fmtChange(w1.totalPages, w2.totalPages)}</td></tr>
-        <tr style="border-bottom: 1px solid var(--border);"><td style="padding: 8px 6px;">세션 수</td><td style="text-align: right; color: var(--text-2);">${w1.totalSessions}</td><td style="text-align: right; font-weight: 500;">${w2.totalSessions}</td><td style="text-align: right;">${fmtChange(w1.totalSessions, w2.totalSessions)}</td></tr>
-        <tr style="border-bottom: 1px solid var(--border);"><td style="padding: 8px 6px;">학습 시간</td><td style="text-align: right; color: var(--text-2);">${fmtTime(w1.totalMinutes)}</td><td style="text-align: right; font-weight: 500;">${fmtTime(w2.totalMinutes)}</td><td style="text-align: right;">${fmtChange(w1.totalMinutes, w2.totalMinutes)}</td></tr>
-        <tr style="border-bottom: 1px solid var(--border);"><td style="padding: 8px 6px;">활성일</td><td style="text-align: right; color: var(--text-2);">${w1.activeDays}/7</td><td style="text-align: right; font-weight: 500;">${w2.activeDays}/7</td><td style="text-align: right;">${fmtChange(w1.activeDays, w2.activeDays)}</td></tr>
-        <tr style="border-bottom: 1px solid var(--border);"><td style="padding: 8px 6px;">평균 집중도</td><td style="text-align: right; color: var(--text-2);">${f1 !== null ? f1.toFixed(1) : '-'}</td><td style="text-align: right; font-weight: 500;">${f2 !== null ? f2.toFixed(1) : '-'}</td><td style="text-align: right;">${f1 !== null && f2 !== null ? ((f2 - f1) >= 0 ? '+' : '') + (f2 - f1).toFixed(1) : '—'}</td></tr>
-        <tr><td style="padding: 8px 6px;">읽기 / 정리 / 쓰기</td><td style="text-align: right; color: var(--text-2);">${fmtTime(w1.byActivity['읽기']||0)} / ${fmtTime(w1.byActivity['정리']||0)} / ${fmtTime(w1.byActivity['쓰기']||0)}</td><td style="text-align: right; font-weight: 500;">${fmtTime(w2.byActivity['읽기']||0)} / ${fmtTime(w2.byActivity['정리']||0)} / ${fmtTime(w2.byActivity['쓰기']||0)}</td><td style="text-align: right; color: var(--text-3); font-size: 11px;">활동별 시간</td></tr>
-      </tbody>
-    </table>
-  `;
-  if (statsEl) statsEl.textContent = `1주차 → 2주차`;
+  if (!text.includes('## 세션 로그')) text += '\n## 세션 로그\n';
+  const idx = text.indexOf('## 세션 로그') + '## 세션 로그'.length;
+  text = text.slice(0, idx) + '\n\n' + entry + text.slice(idx);
+  await gh.putFile(path, text, `Add session ${entry.slice(4, 30).trim()}`);
 }
 
-function renderSleepHabit() {
-  const row = document.getElementById('sleepHabitRow');
-  const stats = document.getElementById('sleepHabitStats');
-  if (!row) return;
-  row.innerHTML = '';
-  const dayLabels = ['월','화','수','목','금','토','일'];
-  let goodCount = 0, badCount = 0, checked = 0;
-  DAYS.forEach((d, i) => {
-    const key = `sleep_phone:${d}`;
-    const state = localStorage.getItem(key) || 'none';
-    if (state === 'good') goodCount++;
-    if (state === 'bad') badCount++;
-    if (state !== 'none') checked++;
-    const cell = document.createElement('button');
-    cell.style.cssText = `flex: 1; min-width: 90px; padding: 10px 6px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; background: ${state === 'good' ? '#E1F5EE' : state === 'bad' ? '#FCEBEB' : 'var(--surface)'}; color: ${state === 'good' ? '#04342C' : state === 'bad' ? '#501313' : 'var(--text)'}; font-size: 13px;`;
-    const sym = state === 'good' ? '✗' : state === 'bad' ? '✓' : '○';
-    cell.innerHTML = `<div style="font-size:11px; color:var(--text-3); margin-bottom:3px;">${dayLabels[i]} ${d}</div><div style="font-size:18px; font-weight:500;">${sym}</div>`;
-    cell.addEventListener('click', () => {
-      const seq = ['none', 'good', 'bad'];
-      const next = seq[(seq.indexOf(state) + 1) % seq.length];
-      if (next === 'none') localStorage.removeItem(key);
-      else localStorage.setItem(key, next);
-      renderSleepHabit();
-    });
-    row.appendChild(cell);
-  });
-  if (stats) stats.textContent = `${checked}/7 · 안 들고감 ${goodCount} · 들고감 ${badCount}`;
-}
-
-async function loadDailyLog() {
-  if (!dirHandle) return;
-  try {
-    const memDir = await dirHandle.getDirectoryHandle('memory');
-    const insDir = await memDir.getDirectoryHandle('insights');
-    const fh = await insDir.getFileHandle(`${todayStr}.md`, { create: true });
-    const file = await fh.getFile();
-    const text = await file.text();
-    const data = parseDailyLog(text);
-    DAILY_AXES.forEach(a => {
-      const el = document.getElementById(a.input);
-      if (el) el.value = data[a.key] || '';
-    });
-  } catch (e) { /* ignore */ }
-}
-
-let dailySaving = false;
 async function saveDailyLog() {
-  if (dailySaving) return;
-  if (!dirHandle) { setDailyStatus('폴더 미연결', true); return; }
-  dailySaving = true;
-  setDailyStatus('저장 중...');
-  try {
-    const memDir = await dirHandle.getDirectoryHandle('memory', { create: true });
-    const insDir = await memDir.getDirectoryHandle('insights', { create: true });
-    const fh = await insDir.getFileHandle(`${todayStr}.md`, { create: true });
-    const file = await fh.getFile();
-    let text = await file.text();
-    if (text.length === 0) {
-      const dow = ['일','월','화','수','목','금','토'][today.getDay()];
-      text = `# ${todayStr} (${dow}) — 인사이트 로그\n\n## 세션 로그\n\n## 인사이트\n`;
-    }
-    const vals = {};
-    DAILY_AXES.forEach(a => {
-      const el = document.getElementById(a.input);
-      vals[a.key] = el ? el.value.trim() : '';
-    });
-    const newSection = '## 일과\n' + DAILY_AXES
-      .filter(a => vals[a.key])
-      .map(a => `- **${a.label}**: ${vals[a.key]}`)
-      .join('\n') + (DAILY_AXES.some(a => vals[a.key]) ? '\n' : '');
-    if (text.match(/## 일과\n[\s\S]*?(?=\n## |$)/)) {
-      text = text.replace(/## 일과\n[\s\S]*?(?=\n## |$)/, newSection.trimEnd());
-    } else {
-      const headerMatch = text.match(/^(# [^\n]*\n+)/);
-      if (headerMatch) {
-        text = headerMatch[1] + newSection + '\n' + text.slice(headerMatch[1].length);
-      } else {
-        text = newSection + '\n' + text;
-      }
-    }
-    const writable = await fh.createWritable();
-    await writable.write(text);
-    await writable.close();
-    const filled = DAILY_AXES.filter(a => vals[a.key]).length;
-    setDailyStatus(`✓ 저장됨 (${filled}/5)`);
-  } catch (e) {
-    setDailyStatus('저장 실패: ' + e.message, true);
-  } finally {
-    dailySaving = false;
+  const path = dailyFilename();
+  const cur = await gh.getFile(path);
+  let text = cur.text;
+  if (!text) {
+    const dow = ['일','월','화','수','목','금','토'][today.getDay()];
+    text = `# ${todayStr} (${dow}) — 인사이트 로그\n\n## 세션 로그\n\n## 인사이트\n`;
   }
-}
-
-function setDailyStatus(msg, warn) {
-  const el = document.getElementById('dailyStatus');
-  if (!el) return;
-  el.textContent = msg;
-  el.style.color = warn ? 'var(--warn)' : 'var(--text-3)';
-}
-
-DAILY_AXES.forEach(a => {
-  const el = document.getElementById(a.input);
-  if (!el) return;
-  el.addEventListener('blur', saveDailyLog);
-  el.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+  const vals = {};
+  ['sleep','morning','lunch','dinner','exercise'].forEach(k => {
+    const el = document.getElementById('dl_' + k);
+    vals[k] = el ? el.value.trim() : '';
   });
-});
-
-const BOOK_NAME_MAP = {
-  '허조그': '허조그',
-  '이글턴': '이글턴',
-  '신의 죽음과 문화': '이글턴',
-  '미메시스': '미메시스',
-  '계몽주의': '계몽주의 개론',
-  '계몽주의 개론': '계몽주의 개론',
-  '계몽주의 개론서': '계몽주의 개론',
-  '일방통행로': '일방통행로'
-};
-
-async function loadActualData() {
-  if (!dirHandle) return null;
-  try {
-    const memDir = await dirHandle.getDirectoryHandle('memory');
-    const insDir = await memDir.getDirectoryHandle('insights');
-    const data = {};
-    const latestEndPage = {};
-    Object.keys(PLAN).forEach(b => bookPagesRead[b] = 0);
-    let discoveredNew = false;
-    for (const day of DAYS) {
-      const [m, d] = day.split('/').map(Number);
-      const dateStr = `2026-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      try {
-        const fh = await insDir.getFileHandle(`${dateStr}.md`);
-        const file = await fh.getFile();
-        const text = await file.text();
-        const sessions = parseSessions(text);
-        sessions.forEach(s => {
-          const rawName = s.book.trim();
-          const bookName = BOOK_NAME_MAP[rawName] || rawName;
-          if (!PLAN[bookName]) {
-            const color = getBookColor(bookName);
-            PLAN[bookName] = { color, total: 0, startPage: 0, endPage: 0, days: {}, isExtra: true };
-            saveExtraBookLocal(bookName, color);
-            saveExtraBookToFile(bookName, color);
-            discoveredNew = true;
-          }
-          const dm = (s.progress || '').match(/\(([+-]?\d+)(p|%)\)/);
-          const delta = dm ? parseInt(dm[1]) : 0;
-          const positiveDelta = Math.max(0, delta);
-          if (!data[day]) data[day] = {};
-          data[day][bookName] = (data[day][bookName] || 0) + positiveDelta;
-          bookPagesRead[bookName] = (bookPagesRead[bookName] || 0) + positiveDelta;
-          const epMatch = (s.progress || '').match(/p\.(\d+)\s*→\s*p\.(\d+)|(\d+)%\s*→\s*(\d+)%/);
-          if (epMatch) {
-            const ep = parseInt(epMatch[2] || epMatch[4]);
-            if (!latestEndPage[bookName] || ep > latestEndPage[bookName]) latestEndPage[bookName] = ep;
-          }
-        });
-      } catch (e) { /* file not yet */ }
-    }
-    let currentPageBumped = false;
-    Object.entries(latestEndPage).forEach(([book, page]) => {
-      if (PLAN[book]) {
-        const cur = getCurrentPage(book);
-        if (page > cur) { setCurrentPage(book, page); currentPageBumped = true; }
-      }
-    });
-    if (discoveredNew) populateBookDropdown();
-    renderBooks();
-    return data;
-  } catch (e) { return null; }
+  const labelMap = { sleep: '수면', morning: '아침', lunch: '점심', dinner: '저녁', exercise: '운동' };
+  let section = '## 일과\n';
+  const keys = Object.keys(vals).filter(k => vals[k]);
+  keys.forEach(k => section += `- **${labelMap[k]}**: ${vals[k]}\n`);
+  const trimmed = section.trimEnd();
+  if (text.match(/## 일과\n[\s\S]*?(?=\n## |$)/)) {
+    text = text.replace(/## 일과\n[\s\S]*?(?=\n## |$)/, trimmed);
+  } else {
+    const h = text.match(/^(# [^\n]*\n+)/);
+    if (h) text = h[1] + trimmed + '\n\n' + text.slice(h[1].length);
+    else text = trimmed + '\n\n' + text;
+  }
+  await gh.putFile(path, text, 'Update daily log');
+  document.getElementById('dailyStatus').textContent = `✓ 저장됨 (${keys.length}/5)`;
 }
 
-let actualChart = null;
-async function renderActualChart() {
-  const ctx = document.getElementById('actualChart');
-  if (!ctx) return;
-  const note = document.getElementById('actualChartNote');
-  const data = await loadActualData();
-  if (actualChart) { actualChart.destroy(); actualChart = null; }
-  if (!data) {
-    if (note) note.textContent = '폴더 연결 후 표시';
-    return;
-  }
-  const datasets = Object.entries(PLAN).map(([name, p]) => ({
-    label: name,
-    data: DAYS.map(d => (data[d] || {})[name] || 0),
-    backgroundColor: p.color, borderColor: p.color, borderWidth: 0.5, stack: 's'
-  }));
-  actualChart = new Chart(ctx, {
+// ===== Render =====
+function diffMin(start, end) {
+  const [sh,sm] = start.split(':').map(Number);
+  const [eh,em] = end.split(':').map(Number);
+  return (eh*60+em) - (sh*60+sm);
+}
+
+function renderLegend() {
+  const el = document.getElementById('planLegend');
+  el.innerHTML = Object.entries(PLAN).map(([n, p]) => `<span><span class="swatch" style="background:${p.color}"></span>${n} ${p.total}${p.unit}</span>`).join('');
+}
+
+let weekChart = null;
+function renderPlanChart() {
+  const ctx = document.getElementById('weekChart');
+  if (weekChart) weekChart.destroy();
+  weekChart = new Chart(ctx, {
     type: 'bar',
-    data: { labels: DAY_LABELS, datasets },
+    data: {
+      labels: DAY_LABELS,
+      datasets: Object.entries(PLAN).map(([name, p]) => ({
+        label: name, data: DAYS.map(d => p.days[d] || 0),
+        backgroundColor: p.color, borderColor: p.color, borderWidth: 0.5, stack: 's'
+      }))
+    },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { stacked: true, ticks: { autoSkip: false } },
-        y: { stacked: true, beginAtZero: true,
-             ticks: { callback: v => Math.round(v) + 'p' } }
+        x: { stacked: true, ticks: { autoSkip: false, font: { size: 10 } } },
+        y: { stacked: true, beginAtZero: true }
+      }
+    }
+  });
+}
+
+const bookPagesRead = {};
+
+let actualChart = null;
+async function loadActualAndRender() {
+  Object.keys(PLAN).forEach(b => bookPagesRead[b] = 0);
+  const data = {};
+  for (const day of DAYS) {
+    const [m, d] = day.split('/').map(Number);
+    const dateStr = `2026-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    try {
+      const f = await gh.getFile(`${dateStr}.md`);
+      if (!f.exists) continue;
+      const sessions = parseSessions(f.text);
+      sessions.forEach(s => {
+        const dm = (s.progress || '').match(/\(([+-]?\d+)(p|%)\)/);
+        const delta = dm ? Math.max(0, parseInt(dm[1])) : 0;
+        if (!data[day]) data[day] = {};
+        data[day][s.book] = (data[day][s.book] || 0) + delta;
+        bookPagesRead[s.book] = (bookPagesRead[s.book] || 0) + delta;
+      });
+    } catch (e) { /* ignore */ }
+  }
+  // render
+  const ctx = document.getElementById('actualChart');
+  if (actualChart) actualChart.destroy();
+  actualChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: DAY_LABELS,
+      datasets: Object.entries(PLAN).map(([name, p]) => ({
+        label: name, data: DAYS.map(d => (data[d] || {})[name] || 0),
+        backgroundColor: p.color, borderColor: p.color, borderWidth: 0.5, stack: 's'
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { stacked: true, ticks: { autoSkip: false, font: { size: 10 } } },
+        y: { stacked: true, beginAtZero: true }
       }
     }
   });
   let totalActual = 0;
   Object.values(data).forEach(day => Object.values(day).forEach(v => totalActual += v));
-  if (note) note.textContent = `실제 ${totalActual}p / 계획 1050p (${Math.round(totalActual/1050*100)}%)`;
+  document.getElementById('actualChartNote').textContent = `실제 ${totalActual} / 1050 (${Math.round(totalActual/1050*100)}%)`;
   renderBooks();
 }
 
-async function loadAllSessionsThisWeek() {
-  if (!dirHandle) return [];
-  try {
-    const memDir = await dirHandle.getDirectoryHandle('memory');
-    const insDir = await memDir.getDirectoryHandle('insights');
-    const all = [];
-    for (const day of DAYS) {
-      const [m, d] = day.split('/').map(Number);
-      const dateStr = `2026-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      try {
-        const fh = await insDir.getFileHandle(`${dateStr}.md`);
-        const file = await fh.getFile();
-        const text = await file.text();
-        const sessions = parseSessions(text);
-        sessions.forEach(s => { s.day = day; all.push(s); });
-      } catch (e) {}
-    }
-    return all;
-  } catch (e) { return []; }
-}
-
-function distractionTodoKey(it) {
-  return `dt_todo:${it.day}:${it.start}:${it.text}`;
-}
-function isDistractionTodo(it) {
-  return localStorage.getItem(distractionTodoKey(it)) === '1';
-}
-function setDistractionTodo(it, val) {
-  if (val) localStorage.setItem(distractionTodoKey(it), '1');
-  else localStorage.removeItem(distractionTodoKey(it));
-}
-
-async function renderDistractionPanel() {
-  const panel = document.getElementById('distractionPanel');
-  const stats = document.getElementById('distractionStats');
-  if (!panel) return;
-  if (!dirHandle) {
-    panel.innerHTML = '<div class="session-empty">폴더 연결 후 표시됩니다</div>';
-    if (stats) stats.textContent = '';
-    return;
-  }
-  const all = await loadAllSessionsThisWeek();
-  const items = [];
-  let totalPhone = 0;
-  let sessionsWithPhone = 0;
-  let sessionsWithDistraction = 0;
-  const dCount = {};
-  all.forEach(s => {
-    if (s.phone && s.phone > 0) { totalPhone += s.phone; sessionsWithPhone++; }
-    if (s.distraction) {
-      sessionsWithDistraction++;
-      s.distraction.split(/[,，]/).map(d => d.trim()).filter(Boolean).forEach(d => {
-        items.push({ text: d, day: s.day, start: s.start, end: s.end, book: s.book, activity: s.activity });
-        dCount[d] = (dCount[d] || 0) + 1;
-      });
-    }
+function renderBooks() {
+  const grid = document.getElementById('booksGrid');
+  grid.innerHTML = '';
+  Object.entries(PLAN).forEach(([name, p]) => {
+    const read = bookPagesRead[name] || 0;
+    const pct = Math.min(100, Math.round((read / p.total) * 100));
+    const card = document.createElement('div');
+    card.className = 'book-card';
+    card.style.borderLeftColor = p.color;
+    card.innerHTML = `
+      <div class="name">${name}${p.unit === '%' ? ' <span style="font-size:10px;color:var(--text-3);">(e-book)</span>' : ''}</div>
+      <div class="meta">목표 ${p.total}${p.unit}</div>
+      <div class="progress-track"><div class="progress-bar" style="width:${pct}%; background:${p.color};"></div></div>
+      <div class="progress-text"><span>${read}/${p.total}${p.unit}</span><span>${pct}%</span></div>
+    `;
+    grid.appendChild(card);
   });
-  const escape = (t) => (t || '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
-  if (items.length === 0 && totalPhone === 0) {
-    panel.innerHTML = '<div class="session-empty">아직 폰·딴생각 기록 없음 — 정직하게 적을수록 패턴이 보입니다</div>';
-    if (stats) stats.textContent = '';
-    return;
-  }
-  // Mark TODO state
-  items.forEach(it => { it.isTodo = isDistractionTodo(it); });
-  const todoItems = items.filter(it => it.isTodo);
-  const noiseItems = items.filter(it => !it.isTodo);
-  // Top recurring distractions (only non-todo for noise pattern)
-  const topD = Object.entries(dCount).sort((a, b) => b[1] - a[1]).slice(0, 6);
+}
 
-  function itemRow(it, idx) {
-    const actColor = ({'읽기':'#7F77DD','정리':'#1D9E75','쓰기':'#D85A30'})[it.activity || '읽기'];
-    const checked = it.isTodo ? 'checked' : '';
-    const bg = it.isTodo ? '#FAEEDA' : 'var(--surface)';
-    const textStyle = it.isTodo ? 'font-weight:500; color:#412402;' : '';
-    return `<div style="display:flex; gap:10px; align-items:center; padding:6px 12px; border-left:2px solid ${actColor}; background:${bg}; border-radius:0 4px 4px 0;">
-      <input type="checkbox" class="dt-toggle" data-idx="${idx}" ${checked} title="할 일로 표시" style="margin:0; cursor:pointer; flex:0 0 auto; accent-color:#BA7517;">
-      <span style="font-size:11px; color:var(--text-3); flex:0 0 130px;">${it.day} ${it.start}-${it.end}</span>
-      <span style="font-size:11px; color:var(--text-3); flex:0 0 100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escape(it.book)}</span>
-      <span style="font-size:13px; flex:1; ${textStyle}">${escape(it.text)}</span>
-    </div>`;
-  }
+function populateBookDropdown() {
+  const sel = document.getElementById('sBook');
+  sel.innerHTML = Object.keys(PLAN).map(n => `<option value="${n}">${n}</option>`).join('');
+}
 
-  let html = `
-    <div style="display:flex; flex-wrap:wrap; gap:14px; padding:10px 12px; background:var(--surface-2); border-radius:8px; font-size:13px;">
-      <span><span style="color:var(--text-3);">폰</span> <span style="font-weight:500;">${totalPhone}회</span> <span style="color:var(--text-3); font-size:11px;">(${sessionsWithPhone}세션)</span></span>
-      <span style="color:var(--text-3);">·</span>
-      <span><span style="color:var(--text-3);">딴생각</span> <span style="font-weight:500;">${items.length}건</span> <span style="color:var(--text-3); font-size:11px;">(${sessionsWithDistraction}세션)</span></span>
-      <span style="color:var(--text-3);">·</span>
-      <span><span style="color:#BA7517;">할 일로 표시</span> <span style="font-weight:500; color:#BA7517;">${todoItems.length}건</span></span>
-    </div>
-  `;
-  // TODO section at top
-  if (todoItems.length > 0) {
-    html += `<div style="margin-top:6px;">
-      <div style="font-size:12px; font-weight:500; color:#633806; margin-bottom:6px; padding-left:4px;">📌 할 일로 표시된 항목 (${todoItems.length})</div>
-      <div style="display:flex; flex-direction:column; gap:4px;">
-        ${todoItems.slice().reverse().map(it => itemRow(it, items.indexOf(it))).join('')}
-      </div>
-    </div>`;
-  }
-  if (topD.length > 0) {
-    html += `<div style="display:flex; flex-wrap:wrap; gap:6px; padding:8px 12px 4px;">
-      <span style="font-size:11px; color:var(--text-3); margin-right:4px;">반복 패턴:</span>
-      ${topD.map(([t, n]) => `<span style="font-size:12px; padding:2px 8px; background:var(--surface); border:1px solid var(--border); border-radius:999px;">${escape(t)}${n > 1 ? ` <span style="color:var(--warn);">×${n}</span>` : ''}</span>`).join('')}
-    </div>`;
-  }
-  // Full chronological list (latest first), with TODO checkbox per item
-  const reversed = items.slice().reverse();
-  const shown = reversed.slice(0, 50);
-  if (shown.length > 0) {
-    html += `<div style="margin-top:6px;">
-      <div style="font-size:12px; font-weight:500; color:var(--text-2); margin-bottom:6px; padding-left:4px;">전체 (체크 = 할 일로 표시)</div>
-      <div style="display:flex; flex-direction:column; gap:4px;">
-        ${shown.map(it => itemRow(it, items.indexOf(it))).join('')}
-      </div>
-    </div>`;
-    if (reversed.length > shown.length) html += `<div style="font-size:11px; color:var(--text-3); padding:4px 12px;">외 ${reversed.length - shown.length}건…</div>`;
-  }
-  panel.innerHTML = html;
-  if (stats) stats.textContent = `폰 ${totalPhone}회 · 딴생각 ${items.length}건${todoItems.length ? ` · 할 일 ${todoItems.length}건` : ''}`;
+function getBookUnit(name) { return (PLAN[name] || {}).unit || 'p'; }
 
-  // Wire checkboxes
-  panel.querySelectorAll('.dt-toggle').forEach(cb => {
-    cb.addEventListener('change', (e) => {
-      const idx = Number(e.target.dataset.idx);
-      const it = items[idx];
-      if (!it) return;
-      setDistractionTodo(it, e.target.checked);
-      renderDistractionPanel();
+function nowTime() {
+  const d = new Date();
+  return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+
+async function renderSessions() {
+  const list = document.getElementById('sessionList');
+  list.innerHTML = '<div class="session-empty">로딩 중...</div>';
+  try {
+    const { sessions, daily } = await loadToday();
+    // daily log
+    ['수면','아침','점심','저녁','운동'].forEach(label => {
+      const key = { '수면':'sleep','아침':'morning','점심':'lunch','저녁':'dinner','운동':'exercise' }[label];
+      const el = document.getElementById('dl_' + key);
+      if (el && daily[label]) el.value = daily[label];
     });
-  });
-}
-
-async function renderReflectionPanel() {
-  const panel = document.getElementById('reflectionPanel');
-  const stats = document.getElementById('reflectionStats');
-  if (!panel) return;
-  if (!dirHandle) {
-    panel.innerHTML = '<div class="session-empty">폴더 연결 후 표시됩니다</div>';
-    if (stats) stats.textContent = '';
-    return;
-  }
-  const all = await loadAllSessionsThisWeek();
-  if (all.length === 0) {
-    panel.innerHTML = '<div class="session-empty">아직 세션 없음 — 첫 세션을 기록해보세요</div>';
-    if (stats) stats.textContent = '';
-    return;
-  }
-  // Activity time totals
-  const actMin = { '읽기': 0, '정리': 0, '쓰기': 0 };
-  const kwCount = {};
-  const byBook = {};
-  all.forEach(s => {
-    const act = s.activity || '읽기';
-    actMin[act] = (actMin[act] || 0) + Number(s.minutes || 0);
-    if (s.keywords) {
-      s.keywords.split(/[,，]/).map(k => k.trim()).filter(Boolean).forEach(k => {
-        kwCount[k] = (kwCount[k] || 0) + 1;
+    if (sessions.length === 0) {
+      list.innerHTML = '<div class="session-empty">아직 세션 없음</div>';
+    } else {
+      list.innerHTML = '';
+      sessions.forEach(s => {
+        const colors = { '읽기':'#7F77DD','정리':'#1D9E75','쓰기':'#D85A30' };
+        const c = colors[s.activity] || '#7F77DD';
+        const e = (t) => (t||'').replace(/</g,'&lt;');
+        const d = document.createElement('div');
+        d.className = 'session-item';
+        d.innerHTML = `
+          <div class="head">
+            <span style="font-weight:500;">
+              <span style="display:inline-block;padding:1px 6px;font-size:10px;background:${c};color:white;border-radius:3px;margin-right:4px;">${s.activity}</span>${e(s.book)}
+            </span>
+            <span class="time">${s.start}-${s.end} (${s.minutes}분)</span>
+          </div>
+          <div class="body">${s.progress ? e(s.progress)+' · ' : ''}집중 ${s.focus||'-'}/5${s.keywords?' · 🔑 '+e(s.keywords):''}${s.memo?' · '+e(s.memo):''}</div>
+          ${s.reflection ? `<div style="margin-top:6px;padding:6px 8px;background:var(--surface-2);border-left:2px solid ${c};border-radius:0 4px 4px 0;font-size:12px;white-space:pre-wrap;">${e(s.reflection)}</div>` : ''}
+        `;
+        list.appendChild(d);
       });
     }
-    if (!byBook[s.book]) byBook[s.book] = [];
-    byBook[s.book].push(s);
-  });
-  const actBadge = (a) => {
-    const c = { '읽기': '#7F77DD', '정리': '#1D9E75', '쓰기': '#D85A30' }[a] || '#7F77DD';
-    return `<span style="display:inline-block; padding:1px 6px; font-size:10px; background:${c}; color:white; border-radius:3px; margin-right:4px;">${a}</span>`;
-  };
-  const fmtH = (m) => m >= 60 ? `${Math.floor(m/60)}h ${m%60}m` : `${m}m`;
-  const escape = (t) => (t || '').replace(/</g, '&lt;');
-  // Top keywords (top 8)
-  const topKw = Object.entries(kwCount).sort((a,b) => b[1] - a[1]).slice(0, 8);
-  // Build panel
-  let html = `
-    <div style="display:flex; flex-wrap:wrap; gap:8px; padding:10px 12px; background:var(--surface-2); border-radius:8px;">
-      ${actBadge('읽기')} <span style="font-size:13px; font-weight:500;">${fmtH(actMin['읽기'])}</span>
-      <span style="margin: 0 6px; color: var(--text-3);">·</span>
-      ${actBadge('정리')} <span style="font-size:13px; font-weight:500;">${fmtH(actMin['정리'])}</span>
-      <span style="margin: 0 6px; color: var(--text-3);">·</span>
-      ${actBadge('쓰기')} <span style="font-size:13px; font-weight:500;">${fmtH(actMin['쓰기'])}</span>
-    </div>
-  `;
-  if (topKw.length > 0) {
-    html += `<div style="display:flex; flex-wrap:wrap; gap:6px; padding:10px 12px;">
-      <span style="font-size:11px; color:var(--text-3); margin-right:4px;">자주 등장한 키워드:</span>
-      ${topKw.map(([k, n]) => `<span style="font-size:12px; padding:2px 8px; background:var(--surface); border:1px solid var(--border); border-radius:999px;">${escape(k)} <span style="color:var(--text-3);">${n}</span></span>`).join('')}
-    </div>`;
-  }
-  // By book reflection list
-  Object.entries(byBook).forEach(([book, sessions]) => {
-    const reflections = sessions.filter(s => s.reflection && s.reflection.trim().length > 0);
-    if (reflections.length === 0) return;
-    html += `<div style="border:1px solid var(--border); border-radius:8px; padding:10px 12px; background:var(--surface);">
-      <div style="font-weight:500; font-size:13px; margin-bottom:8px;">${escape(book)} <span style="color:var(--text-3); font-weight:400;">— 정리 ${reflections.length}개</span></div>
-      <div style="display:flex; flex-direction:column; gap:8px;">
-      ${reflections.map(s => `
-        <div style="border-left:2px solid ${ ({'읽기':'#7F77DD','정리':'#1D9E75','쓰기':'#D85A30'})[s.activity || '읽기'] }; padding:4px 10px;">
-          <div style="font-size:11px; color:var(--text-3); margin-bottom:2px;">${actBadge(s.activity || '읽기')} ${s.day} ${s.start}-${s.end}</div>
-          <div style="font-size:13px; line-height:1.55; white-space:pre-wrap;">${escape(s.reflection)}</div>
-        </div>
-      `).join('')}
-      </div>
-    </div>`;
-  });
-  panel.innerHTML = html;
-  const totalMin = actMin['읽기'] + actMin['정리'] + actMin['쓰기'];
-  if (stats) stats.textContent = `총 ${fmtH(totalMin)} · 정리 ${all.filter(s=>s.reflection).length}개`;
-}
-
-const IDB_NAME = 'study-dashboard', IDB_KEY = 'dirHandle';
-function idbOpen() {
-  return new Promise((res, rej) => {
-    const req = indexedDB.open(IDB_NAME, 1);
-    req.onupgradeneeded = () => req.result.createObjectStore('handles');
-    req.onsuccess = () => res(req.result);
-    req.onerror = () => rej(req.error);
-  });
-}
-async function idbSave(handle) {
-  const db = await idbOpen();
-  return new Promise((res, rej) => {
-    const tx = db.transaction('handles', 'readwrite');
-    tx.objectStore('handles').put(handle, IDB_KEY);
-    tx.oncomplete = () => res();
-    tx.onerror = () => rej(tx.error);
-  });
-}
-async function idbLoad() {
-  const db = await idbOpen();
-  return new Promise((res, rej) => {
-    const tx = db.transaction('handles', 'readonly');
-    const r = tx.objectStore('handles').get(IDB_KEY);
-    r.onsuccess = () => res(r.result);
-    r.onerror = () => rej(r.error);
-  });
-}
-
-async function verifyAndUseHandle(handle) {
-  const opts = { mode: 'readwrite' };
-  if ((await handle.queryPermission(opts)) === 'granted') return true;
-  if ((await handle.requestPermission(opts)) === 'granted') return true;
-  return false;
-}
-
-async function connectFolder() {
-  try {
-    if (!('showDirectoryPicker' in window)) {
-      toast('이 브라우저는 File System Access를 지원하지 않습니다 (Chrome/Edge 사용)', false);
-      return;
-    }
-    const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
-    if (!await verifyAndUseHandle(handle)) {
-      toast('권한이 거부되었습니다', false); return;
-    }
-    dirHandle = handle;
-    await idbSave(handle);
-    setStatus('연결됨: ' + handle.name, 'ok');
-    document.getElementById('reloadBtn').disabled = false;
-    await loadExtraBooksFromFile();
-    populateBookDropdown();
-    renderBooks();
-    await loadSessions();
-    await renderActualChart();
-    await renderDistractionPanel();
-    await renderReflectionPanel();
-    await loadDailyLog();
-    await renderCompare();
   } catch (e) {
-    if (e.name !== 'AbortError') toast('연결 실패: ' + e.message, false);
+    list.innerHTML = `<div class="session-empty">오류: ${e.message}</div>`;
   }
 }
 
-document.getElementById('connectBtn').addEventListener('click', connectFolder);
-document.getElementById('reloadBtn').addEventListener('click', async () => {
-  await loadExtraBooksFromFile();
-  populateBookDropdown();
-  renderBooks();
-  await loadSessions();
-  await renderActualChart();
-  await renderReflectionPanel();
+function renderSleepHabit() {
+  const row = document.getElementById('sleepHabitRow');
+  const stats = document.getElementById('sleepHabitStats');
+  row.innerHTML = '';
+  const labels = ['월','화','수','목','금','토','일'];
+  let good = 0, bad = 0, checked = 0;
+  DAYS.forEach((d, i) => {
+    const key = `sleep_phone:${d}`;
+    const state = localStorage.getItem(key) || 'none';
+    if (state === 'good') good++; if (state === 'bad') bad++;
+    if (state !== 'none') checked++;
+    const cell = document.createElement('div');
+    cell.className = 'sleep-cell ' + (state === 'good' ? 'good' : state === 'bad' ? 'bad' : '');
+    const sym = state === 'good' ? '✗' : state === 'bad' ? '✓' : '○';
+    cell.innerHTML = `<div style="font-size:10px;color:var(--text-3);">${labels[i]} ${d}</div><div style="font-size:18px;">${sym}</div>`;
+    cell.addEventListener('click', () => {
+      const seq = ['none','good','bad'];
+      const next = seq[(seq.indexOf(state) + 1) % seq.length];
+      if (next === 'none') localStorage.removeItem(key); else localStorage.setItem(key, next);
+      renderSleepHabit();
+    });
+    row.appendChild(cell);
+  });
+  stats.textContent = `${checked}/7 · 안 들고감 ${good} · 들고감 ${bad}`;
+}
+
+// Daily log autosave on blur
+['sleep','morning','lunch','dinner','exercise'].forEach(k => {
+  const el = document.getElementById('dl_' + k);
+  el.addEventListener('blur', async () => {
+    document.getElementById('dailyStatus').textContent = '저장 중...';
+    try { await saveDailyLog(); } catch (e) { document.getElementById('dailyStatus').textContent = '저장 실패: ' + e.message; }
+  });
 });
 
-(async () => {
-  renderChart();
-  renderBooks();
-  renderHabits();
-  renderSleepHabit();
+// Session form interactions
+document.getElementById('sFocus').addEventListener('input', e => {
+  document.getElementById('sFocusVal').textContent = e.target.value;
+});
+document.getElementById('sBook').addEventListener('change', e => {
+  const unit = getBookUnit(e.target.value);
+  const sl = document.getElementById('sStartLabel');
+  const el = document.getElementById('sEndLabel');
+  if (unit === '%') { sl.textContent = '시작 %'; el.textContent = '종료 %'; }
+  else { sl.textContent = '시작 페이지'; el.textContent = '종료 페이지'; }
+});
+
+document.getElementById('saveSession').addEventListener('click', async () => {
+  const btn = document.getElementById('saveSession');
+  btn.disabled = true;
   try {
-    const stored = await idbLoad();
-    if (stored) {
-      if (await verifyAndUseHandle(stored)) {
-        dirHandle = stored;
-        setStatus('연결됨: ' + stored.name, 'ok');
-        document.getElementById('reloadBtn').disabled = false;
-        await loadExtraBooksFromFile();
-        populateBookDropdown();
-        renderBooks();
-        await loadSessions();
-        await renderActualChart();
-        await renderDistractionPanel();
-    await renderReflectionPanel();
-    await loadDailyLog();
-    await renderCompare();
-      } else {
-        setStatus('이전 연결 권한 만료 — 다시 연결하세요', 'warn');
-      }
-    } else {
-      const note = document.getElementById('actualChartNote');
-      if (note) note.textContent = '폴더 연결 후 표시';
-      const panel = document.getElementById('reflectionPanel');
-      if (panel) panel.innerHTML = '<div class="session-empty">폴더 연결 후 표시됩니다</div>';
-      const dpanel = document.getElementById('distractionPanel');
-      if (dpanel) dpanel.innerHTML = '<div class="session-empty">폴더 연결 후 표시됩니다</div>';
+    const book = document.getElementById('sBook').value;
+    const activity = document.getElementById('sActivity').value;
+    const start = document.getElementById('sStart').value;
+    const end = document.getElementById('sEnd').value;
+    const spRaw = document.getElementById('sStartPage').value;
+    const epRaw = document.getElementById('sEndPage').value;
+    const focus = document.getElementById('sFocus').value;
+    const keywords = document.getElementById('sKeywords').value.trim();
+    const memo = document.getElementById('sMemo').value.trim();
+    const reflection = document.getElementById('sReflection').value.trim();
+    if (!start || !end) { toast('시각 필수', false); btn.disabled = false; return; }
+    const minutes = diffMin(start, end);
+    if (minutes <= 0) { toast('시간 이상', false); btn.disabled = false; return; }
+    const unit = getBookUnit(book);
+    const isWrite = activity === '쓰기';
+    const hasPages = epRaw !== '';
+    if (!isWrite && !hasPages) { toast('종료 페이지 필수', false); btn.disabled = false; return; }
+    let progressLine = '';
+    let delta = 0;
+    if (hasPages) {
+      const ep = Number(epRaw);
+      const sp = spRaw === '' ? ep : Number(spRaw);
+      delta = ep - sp;
+      progressLine = unit === '%'
+        ? `- 진행: ${sp}% → ${ep}% (${delta>=0?'+':''}${delta}%)\n`
+        : `- 진행: p.${sp} → p.${ep} (${delta>=0?'+':''}${delta}p)\n`;
     }
-  } catch (e) { /* ignore */ }
+    const reflBlock = reflection
+      ? `- 정리:\n${reflection.split('\n').map(l => '  ' + l).join('\n')}\n`
+      : '';
+    const entry = `### ${start}-${end} (${minutes}분) — ${book} [${activity}]\n` +
+      progressLine + `- 집중: ${focus}/5\n` +
+      (keywords ? `- 키워드: ${keywords}\n` : '') +
+      (memo ? `- 메모: ${memo}\n` : '') + reflBlock;
+    await appendSession(entry);
+    document.getElementById('sEndPage').value = '';
+    document.getElementById('sStartPage').value = '';
+    document.getElementById('sMemo').value = '';
+    document.getElementById('sKeywords').value = '';
+    document.getElementById('sReflection').value = '';
+    document.getElementById('sStart').value = end;
+    document.getElementById('sEnd').value = nowTime();
+    toast('세션 저장됨');
+    await renderSessions();
+    await loadActualAndRender();
+    // feedback
+    const fb = document.getElementById('feedbackBox');
+    let msg = '';
+    if (Number(focus) >= 5) msg = '집중 5/5 — 최고. 어떤 컨디션이었는지 메모해두면 재현 가능.';
+    else if (Number(focus) === 4) msg = '집중 4/5 — 안정적인 세션.';
+    else if (Number(focus) === 3) msg = '집중 3/5 — 일단 했으면 충분. 부분 달성도 1급 시민.';
+    else msg = `집중 ${focus}/5 — 환경 한번 점검.`;
+    if (delta >= 30) msg += ` ${delta}${unit==='%'?'%':'p'} — 한 호흡 잘 가셨네요.`;
+    else if (delta >= 5) msg += ` ${delta}${unit==='%'?'%':'p'} — 누적이 자산.`;
+    else if (delta > 0) msg += ` ${delta}${unit==='%'?'%':'p'} — 작아도 시작했다는 게 가치.`;
+    if (reflection.length > 30) msg += ' 정리까지 채우셨네요 — 글쓰기 자료로 그대로 남습니다.';
+    fb.textContent = msg;
+    fb.style.display = 'block';
+  } catch (e) {
+    toast('저장 실패: ' + e.message, false);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// Connect
+document.getElementById('connectBtn').addEventListener('click', async () => {
+  const owner = document.getElementById('ghOwner').value.trim();
+  const repo = document.getElementById('ghRepo').value.trim();
+  const token = document.getElementById('ghToken').value.trim();
+  if (!owner || !repo || !token) { toast('모든 필드 필수', false); return; }
+  gh.setCreds(owner, repo, token);
+  await connect();
+});
+
+async function connect() {
+  setStatus('연결 중...');
+  try {
+    // test access
+    await gh.req('GET', 'README.md');
+    setStatus('연결됨: ' + gh.owner + '/' + gh.repo, 'ok');
+    document.getElementById('connectPanel').classList.add('hidden');
+    document.getElementById('mainContent').style.display = 'block';
+    document.getElementById('reloadBtn').disabled = false;
+    document.getElementById('logoutBtn').disabled = false;
+    renderLegend();
+    renderPlanChart();
+    populateBookDropdown();
+    document.getElementById('sBook').dispatchEvent(new Event('change'));
+    document.getElementById('sStart').value = nowTime();
+    document.getElementById('sEnd').value = nowTime();
+    renderSleepHabit();
+    await renderSessions();
+    await loadActualAndRender();
+  } catch (e) {
+    setStatus('연결 실패', 'warn');
+    toast('오류: ' + e.message + ' (token/owner/repo 확인)', false);
+    gh.clearCreds();
+  }
+}
+
+document.getElementById('reloadBtn').addEventListener('click', async () => {
+  await renderSessions();
+  await loadActualAndRender();
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  gh.clearCreds();
+  location.reload();
+});
+
+// Boot
+(async () => {
+  if (gh.loadCreds()) {
+    document.getElementById('ghOwner').value = gh.owner;
+    document.getElementById('ghRepo').value = gh.repo;
+    document.getElementById('ghToken').value = gh.token;
+    await connect();
+  }
 })();
 </script>
 
