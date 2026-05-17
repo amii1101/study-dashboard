@@ -219,9 +219,13 @@
           <div><label id="sEndLabel">종료 페이지</label><input type="number" id="sEndPage" min="0"></div>
         </div>
         <div><label>집중도 <span id="sFocusVal">3</span>/5</label><input type="range" id="sFocus" min="1" max="5" value="3"></div>
+        <div class="row">
+          <div><label>폰 킨 횟수</label><input type="number" id="sPhone" min="0" placeholder="0"></div>
+          <div><label>딴생각 (쉼표, 적을수록 좋음)</label><input type="text" id="sDistraction" placeholder="예: 점심, 카톡"></div>
+        </div>
         <div><label>키워드 (쉼표)</label><input type="text" id="sKeywords"></div>
-        <div><label>메모</label><input type="text" id="sMemo"></div>
-        <div><label>정리</label><textarea id="sReflection" placeholder="배운 내용·깨달음"></textarea></div>
+        <div><label>메모 (환경·컨디션)</label><input type="text" id="sMemo"></div>
+        <div><label>정리 (내용·깨달음)</label><textarea id="sReflection" placeholder="배운 내용·깨달음"></textarea></div>
         <button class="primary" id="saveSession">세션 저장</button>
         <div id="feedbackBox" style="display: none; padding: 10px; background: var(--surface-2); border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; font-size: 12px;"></div>
       </div>
@@ -233,7 +237,29 @@
   <div class="card">
     <h2>실제 진행도 (지금까지)</h2>
     <span class="muted" id="actualChartNote"></span>
-    <div class="chart-wrap" style="margin-top: 8px;"><canvas id="actualChart"></canvas></div>
+    <div class="legend" id="actualLegend" style="margin-top:8px;"></div>
+    <div class="chart-wrap" style="margin-top: 4px;"><canvas id="actualChart"></canvas></div>
+  </div>
+</section>
+
+<section>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <h2 style="margin:0;">이번 주 정리 누적</h2>
+      <span class="muted" id="reflectionStats"></span>
+    </div>
+    <div id="reflectionPanel" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+</section>
+
+<section>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <h2 style="margin:0;">지난 주 비교</h2>
+      <span class="muted" id="compareStats"></span>
+    </div>
+    <div class="chart-wrap" style="height:240px;"><canvas id="compareChart"></canvas></div>
+    <div id="compareTable" style="margin-top:14px;"></div>
   </div>
 </section>
 
@@ -360,11 +386,14 @@ function parseSessions(text) {
     const endPage = pageM ? parseInt(pageM[2]) : (pctM ? parseInt(pctM[2]) : null);
     const unit = pageM ? 'p' : (pctM ? '%' : 'p');
     const focus = (block.match(/- 집중: (\d)\/5/) || [])[1];
+    const phoneMatch = (block.match(/- 폰: (\d+)회/) || []);
+    const phone = phoneMatch[1] ? parseInt(phoneMatch[1]) : 0;
+    const distraction = (block.match(/- 딴생각: (.+)/) || [])[1] || '';
     const memo = (block.match(/- 메모: (.+)/) || [])[1];
     const keywords = (block.match(/- 키워드: (.+)/) || [])[1];
     const reflMatch = block.match(/- 정리:\s*([\s\S]+?)(?=\n- |$)/);
     const reflection = reflMatch ? reflMatch[1].trim() : '';
-    result.push({ start: m[1], end: m[2], minutes: m[3], book, activity, progress, focus, memo, keywords, reflection, startPage, endPage, unit, rawBlock: m[0] });
+    result.push({ start: m[1], end: m[2], minutes: m[3], book, activity, progress, focus, phone, distraction, memo, keywords, reflection, startPage, endPage, unit, rawBlock: m[0] });
   }
   return result;
 }
@@ -444,7 +473,10 @@ function diffMin(start, end) {
 
 function renderLegend() {
   const el = document.getElementById('planLegend');
-  el.innerHTML = Object.entries(PLAN).map(([n, p]) => `<span><span class="swatch" style="background:${p.color}"></span>${n} ${p.total}${p.unit}</span>`).join('');
+  const html = Object.entries(PLAN).map(([n, p]) => `<span><span class="swatch" style="background:${p.color}"></span>${n} ${p.total}${p.unit}</span>`).join('');
+  el.innerHTML = html;
+  const aEl = document.getElementById('actualLegend');
+  if (aEl) aEl.innerHTML = Object.entries(PLAN).map(([n, p]) => `<span><span class="swatch" style="background:${p.color}"></span>${n}</span>`).join('');
 }
 
 let weekChart = null;
@@ -477,6 +509,7 @@ let actualChart = null;
 async function loadActualAndRender() {
   Object.keys(PLAN).forEach(b => bookPagesRead[b] = 0);
   const data = {};
+  let discoveredNew = false;
   for (const day of DAYS) {
     const [m, d] = day.split('/').map(Number);
     const dateStr = `2026-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -485,6 +518,10 @@ async function loadActualAndRender() {
       if (!f.exists) continue;
       const sessions = parseSessions(f.text);
       sessions.forEach(s => {
+        if (!PLAN[s.book]) {
+          PLAN[s.book] = { color: getBookColor(s.book), total: 100, unit: 'p', days: {} };
+          discoveredNew = true;
+        }
         const dm = (s.progress || '').match(/\(([+-]?\d+)(p|%)\)/);
         const delta = dm ? Math.max(0, parseInt(dm[1])) : 0;
         if (!data[day]) data[day] = {};
@@ -493,6 +530,7 @@ async function loadActualAndRender() {
       });
     } catch (e) { /* ignore */ }
   }
+  if (discoveredNew) { populateBookDropdown(); renderLegend(); }
   // render
   const ctx = document.getElementById('actualChart');
   if (actualChart) actualChart.destroy();
@@ -520,28 +558,117 @@ async function loadActualAndRender() {
   renderBooks();
 }
 
+function getBookUnitOverride(name) {
+  const stored = localStorage.getItem(`bookUnit:${name}`);
+  if (stored === 'p' || stored === '%') return stored;
+  return (PLAN[name] || {}).unit || 'p';
+}
+function setBookUnitOverride(name, unit) {
+  if (unit !== 'p' && unit !== '%') return;
+  localStorage.setItem(`bookUnit:${name}`, unit);
+  if (PLAN[name]) {
+    PLAN[name].unit = unit;
+    if (unit === '%' && PLAN[name].total !== 100) {
+      PLAN[name].total = 100;
+    }
+  }
+}
+
 function renderBooks() {
   const grid = document.getElementById('booksGrid');
   grid.innerHTML = '';
   Object.entries(PLAN).forEach(([name, p]) => {
+    const unit = getBookUnitOverride(name);
+    p.unit = unit;
     const read = bookPagesRead[name] || 0;
-    const pct = Math.min(100, Math.round((read / p.total) * 100));
+    const total = p.total || 0;
+    const pct = total > 0 ? Math.min(100, Math.round((read / total) * 100)) : 0;
     const card = document.createElement('div');
     card.className = 'book-card';
     card.style.borderLeftColor = p.color;
+    const btnStyle = (active) => `padding:2px 8px;font-size:10px;border:1px solid var(--border);border-radius:4px;cursor:pointer;background:${active ? p.color : 'var(--surface)'};color:${active ? 'white' : 'var(--text-2)'};`;
     card.innerHTML = `
-      <div class="name">${name}${p.unit === '%' ? ' <span style="font-size:10px;color:var(--text-3);">(e-book)</span>' : ''}</div>
-      <div class="meta">목표 ${p.total}${p.unit}</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="name">${name}${unit === '%' ? ' <span style="font-size:10px;color:var(--text-3);">(e-book)</span>' : ''}</div>
+        <div style="display:flex;gap:3px;">
+          <button class="book-unit-btn" data-book="${name}" data-unit="p" style="${btnStyle(unit === 'p')}">p</button>
+          <button class="book-unit-btn" data-book="${name}" data-unit="%" style="${btnStyle(unit === '%')}">%</button>
+        </div>
+      </div>
+      <div class="meta">목표 ${total}${unit}</div>
       <div class="progress-track"><div class="progress-bar" style="width:${pct}%; background:${p.color};"></div></div>
-      <div class="progress-text"><span>${read}/${p.total}${p.unit}</span><span>${pct}%</span></div>
+      <div class="progress-text"><span>${read}/${total}${unit}</span><span>${pct}%</span></div>
     `;
     grid.appendChild(card);
+  });
+  grid.querySelectorAll('.book-unit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const book = btn.dataset.book;
+      const unit = btn.dataset.unit;
+      if (getBookUnitOverride(book) === unit) return;
+      if (unit === '%' && !confirm(`"${book}"을 e-book(%)으로 전환합니다. total이 100%로 재설정. 진행할까요?`)) return;
+      setBookUnitOverride(book, unit);
+      renderBooks();
+      populateBookDropdown();
+    });
   });
 }
 
 function populateBookDropdown() {
   const sel = document.getElementById('sBook');
-  sel.innerHTML = Object.keys(PLAN).map(n => `<option value="${n}">${n}</option>`).join('');
+  const cur = sel.value;
+  sel.innerHTML = Object.keys(PLAN).map(n => `<option value="${n}">${n}</option>`).join('') + '<option value="__add_new__" style="color:#534AB7;">+ 새 책 추가...</option>';
+  if (cur && PLAN[cur]) sel.value = cur;
+}
+
+const BOOK_COLORS = ['#A47CB8', '#7F77DD', '#1D9E75', '#D4537E', '#378ADD', '#D85A30', '#BA7517', '#534AB7', '#0F6E56', '#993556'];
+function getBookColor(name) {
+  if (PLAN[name]) return PLAN[name].color;
+  const hash = name.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  return BOOK_COLORS[hash % BOOK_COLORS.length];
+}
+
+async function loadExtraBooks() {
+  try {
+    const f = await gh.getFile('books.json');
+    if (f.exists) {
+      const data = JSON.parse(f.text || '{}');
+      const extras = (data && data.extras) || [];
+      extras.forEach(b => {
+        if (!PLAN[b.name]) {
+          PLAN[b.name] = { color: b.color, total: b.total || 100, unit: b.unit || 'p', days: {} };
+        }
+      });
+    }
+  } catch (e) { /* ignore */ }
+}
+async function saveExtraBook(name, color, unit, total) {
+  try {
+    let extras = [];
+    const f = await gh.getFile('books.json');
+    if (f.exists) {
+      const data = JSON.parse(f.text || '{}');
+      extras = (data && data.extras) || [];
+    }
+    if (!extras.find(b => b.name === name)) extras.push({ name, color, unit, total });
+    await gh.putFile('books.json', JSON.stringify({ extras }, null, 2), 'Add book ' + name);
+  } catch (e) { console.error(e); }
+}
+async function addNewBookFlow() {
+  const name = prompt('새 책 이름:');
+  if (!name || !name.trim()) return null;
+  const trimmed = name.trim();
+  if (PLAN[trimmed]) return trimmed;
+  const isEbook = confirm(`"${trimmed}"이 e-book인가요?\n확인: %로 추적 (e-book)\n취소: 페이지로 추적 (종이책)`);
+  const unit = isEbook ? '%' : 'p';
+  const total = isEbook ? 100 : Number(prompt('총 페이지 수를 입력하세요 (예: 300):', '300') || 300);
+  const color = getBookColor(trimmed);
+  PLAN[trimmed] = { color, total, unit, days: {} };
+  await saveExtraBook(trimmed, color, unit, total);
+  populateBookDropdown();
+  renderBooks();
+  renderLegend();
+  return trimmed;
 }
 
 function getBookUnit(name) { return (PLAN[name] || {}).unit || 'p'; }
@@ -580,6 +707,7 @@ async function renderSessions() {
             <span class="time">${s.start}-${s.end} (${s.minutes}분)</span>
           </div>
           <div class="body">${s.progress ? e(s.progress)+' · ' : ''}집중 ${s.focus||'-'}/5${s.keywords?' · 🔑 '+e(s.keywords):''}${s.memo?' · '+e(s.memo):''}</div>
+          ${(s.phone || s.distraction) ? `<div style="margin-top:6px;padding:6px 8px;background:#FAEEDA;border-left:2px solid #BA7517;border-radius:0 4px 4px 0;font-size:12px;color:#412402;">${s.phone ? `<span style="display:inline-block;padding:1px 5px;font-size:10px;background:#BA7517;color:white;border-radius:3px;margin-right:5px;">📵 ${s.phone}회</span>` : ''}${s.distraction ? `<span style="color:#633806;">딴생각:</span> ${e(s.distraction)}` : ''}</div>` : ''}
           ${s.reflection ? `<div style="margin-top:6px;padding:6px 8px;background:var(--surface-2);border-left:2px solid ${c};border-radius:0 4px 4px 0;font-size:12px;white-space:pre-wrap;">${e(s.reflection)}</div>` : ''}
         `;
         list.appendChild(d);
@@ -641,8 +769,15 @@ async function saveSleepPhoneData() {
 document.getElementById('sFocus').addEventListener('input', e => {
   document.getElementById('sFocusVal').textContent = e.target.value;
 });
-document.getElementById('sBook').addEventListener('change', e => {
-  const unit = getBookUnit(e.target.value);
+document.getElementById('sBook').addEventListener('change', async e => {
+  if (e.target.value === '__add_new__') {
+    const newName = await addNewBookFlow();
+    if (newName) { e.target.value = newName; }
+    else { e.target.value = Object.keys(PLAN)[0]; }
+    e.target.dispatchEvent(new Event('change'));
+    return;
+  }
+  const unit = getBookUnitOverride(e.target.value);
   const sl = document.getElementById('sStartLabel');
   const el = document.getElementById('sEndLabel');
   if (unit === '%') { sl.textContent = '시작 %'; el.textContent = '종료 %'; }
@@ -660,6 +795,9 @@ document.getElementById('saveSession').addEventListener('click', async () => {
     const spRaw = document.getElementById('sStartPage').value;
     const epRaw = document.getElementById('sEndPage').value;
     const focus = document.getElementById('sFocus').value;
+    const phoneRaw = document.getElementById('sPhone').value;
+    const phone = phoneRaw === '' ? 0 : Math.max(0, Number(phoneRaw));
+    const distraction = document.getElementById('sDistraction').value.trim();
     const keywords = document.getElementById('sKeywords').value.trim();
     const memo = document.getElementById('sMemo').value.trim();
     const reflection = document.getElementById('sReflection').value.trim();
@@ -685,6 +823,8 @@ document.getElementById('saveSession').addEventListener('click', async () => {
       : '';
     const entry = `### ${start}-${end} (${minutes}분) — ${book} [${activity}]\n` +
       progressLine + `- 집중: ${focus}/5\n` +
+      (phoneRaw !== '' ? `- 폰: ${phone}회\n` : '') +
+      (distraction ? `- 딴생각: ${distraction}\n` : '') +
       (keywords ? `- 키워드: ${keywords}\n` : '') +
       (memo ? `- 메모: ${memo}\n` : '') + reflBlock;
     await appendSession(entry);
@@ -693,11 +833,15 @@ document.getElementById('saveSession').addEventListener('click', async () => {
     document.getElementById('sMemo').value = '';
     document.getElementById('sKeywords').value = '';
     document.getElementById('sReflection').value = '';
+    document.getElementById('sPhone').value = '';
+    document.getElementById('sDistraction').value = '';
     document.getElementById('sStart').value = end;
     document.getElementById('sEnd').value = nowTime();
     toast('세션 저장됨');
     await renderSessions();
     await loadActualAndRender();
+    await renderReflectionPanel();
+    await renderCompare();
     // feedback
     const fb = document.getElementById('feedbackBox');
     let msg = '';
@@ -728,6 +872,161 @@ document.getElementById('connectBtn').addEventListener('click', async () => {
   await connect();
 });
 
+async function loadAllSessionsThisWeek() {
+  const all = [];
+  for (const day of DAYS) {
+    const [m, d] = day.split('/').map(Number);
+    const dateStr = `2026-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    try {
+      const f = await gh.getFile(`${dateStr}.md`);
+      if (!f.exists) continue;
+      const sessions = parseSessions(f.text);
+      sessions.forEach(s => { s.day = day; all.push(s); });
+    } catch (e) { /* ignore */ }
+  }
+  return all;
+}
+
+async function renderReflectionPanel() {
+  const panel = document.getElementById('reflectionPanel');
+  const stats = document.getElementById('reflectionStats');
+  if (!panel) return;
+  const all = await loadAllSessionsThisWeek();
+  if (all.length === 0) {
+    panel.innerHTML = '<div class="session-empty">아직 세션 없음</div>';
+    if (stats) stats.textContent = '';
+    return;
+  }
+  const actMin = { '읽기': 0, '정리': 0, '쓰기': 0 };
+  const kwCount = {};
+  const byBook = {};
+  all.forEach(s => {
+    const act = s.activity || '읽기';
+    actMin[act] = (actMin[act] || 0) + Number(s.minutes || 0);
+    if (s.keywords) {
+      s.keywords.split(/[,，]/).map(k => k.trim()).filter(Boolean).forEach(k => {
+        kwCount[k] = (kwCount[k] || 0) + 1;
+      });
+    }
+    if (!byBook[s.book]) byBook[s.book] = [];
+    byBook[s.book].push(s);
+  });
+  const actBadge = (a) => {
+    const c = { '읽기':'#7F77DD','정리':'#1D9E75','쓰기':'#D85A30' }[a] || '#7F77DD';
+    return `<span style="display:inline-block;padding:1px 6px;font-size:10px;background:${c};color:white;border-radius:3px;margin-right:4px;">${a}</span>`;
+  };
+  const fmtH = (m) => m >= 60 ? `${Math.floor(m/60)}h ${m%60}m` : `${m}m`;
+  const esc = (t) => (t||'').replace(/</g,'&lt;');
+  const topKw = Object.entries(kwCount).sort((a,b) => b[1]-a[1]).slice(0, 8);
+  let html = `<div style="display:flex;flex-wrap:wrap;gap:12px;padding:10px 12px;background:var(--surface-2);border-radius:8px;font-size:13px;">
+    ${actBadge('읽기')}<span style="font-weight:500;">${fmtH(actMin['읽기'])}</span>
+    <span style="color:var(--text-3);">·</span>
+    ${actBadge('정리')}<span style="font-weight:500;">${fmtH(actMin['정리'])}</span>
+    <span style="color:var(--text-3);">·</span>
+    ${actBadge('쓰기')}<span style="font-weight:500;">${fmtH(actMin['쓰기'])}</span>
+  </div>`;
+  if (topKw.length > 0) {
+    html += `<div style="display:flex;flex-wrap:wrap;gap:6px;padding:6px 12px;">
+      <span style="font-size:11px;color:var(--text-3);margin-right:4px;">자주 등장한 키워드:</span>
+      ${topKw.map(([k,n]) => `<span style="font-size:12px;padding:2px 8px;background:var(--surface);border:1px solid var(--border);border-radius:999px;">${esc(k)} <span style="color:var(--text-3);">${n}</span></span>`).join('')}
+    </div>`;
+  }
+  Object.entries(byBook).forEach(([book, sessions]) => {
+    const reflections = sessions.filter(s => s.reflection && s.reflection.trim().length > 0);
+    if (reflections.length === 0) return;
+    html += `<div style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;background:var(--surface);">
+      <div style="font-weight:500;font-size:13px;margin-bottom:8px;">${esc(book)} <span style="color:var(--text-3);font-weight:400;">— 정리 ${reflections.length}개</span></div>
+      ${reflections.map(s => `<div style="border-left:2px solid ${ ({'읽기':'#7F77DD','정리':'#1D9E75','쓰기':'#D85A30'})[s.activity||'읽기'] };padding:4px 10px;margin-bottom:6px;">
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:2px;">${actBadge(s.activity||'읽기')}${s.day} ${s.start}-${s.end}</div>
+        <div style="font-size:13px;white-space:pre-wrap;">${esc(s.reflection)}</div>
+      </div>`).join('')}
+    </div>`;
+  });
+  panel.innerHTML = html;
+  const totalMin = actMin['읽기'] + actMin['정리'] + actMin['쓰기'];
+  if (stats) stats.textContent = `총 ${fmtH(totalMin)} · 정리 ${all.filter(s=>s.reflection).length}개`;
+}
+
+const WEEK1_DAYS = ['5/4','5/5','5/6','5/7','5/8','5/9','5/10'];
+async function loadWeekStats(weekDays) {
+  const stats = { totalPages: 0, totalSessions: 0, totalMinutes: 0, activeDays: 0, focusSum: 0, focusCount: 0, byActivity: { '읽기': 0, '정리': 0, '쓰기': 0 } };
+  for (const day of weekDays) {
+    const [m, d] = day.split('/').map(Number);
+    const dateStr = `2026-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    try {
+      const f = await gh.getFile(`${dateStr}.md`);
+      if (!f.exists) continue;
+      const sessions = parseSessions(f.text);
+      if (sessions.length > 0) stats.activeDays++;
+      sessions.forEach(s => {
+        stats.totalSessions++;
+        stats.totalMinutes += Number(s.minutes || 0);
+        const dm = (s.progress || '').match(/\(([+-]?\d+)(p|%)\)/);
+        const delta = dm ? Math.max(0, parseInt(dm[1])) : 0;
+        stats.totalPages += delta;
+        const act = s.activity || '읽기';
+        stats.byActivity[act] = (stats.byActivity[act] || 0) + Number(s.minutes || 0);
+        if (s.focus) { stats.focusSum += Number(s.focus); stats.focusCount++; }
+      });
+    } catch (e) {}
+  }
+  return stats;
+}
+
+let compareChart = null;
+async function renderCompare() {
+  const tableEl = document.getElementById('compareTable');
+  if (!tableEl) return;
+  const w1 = await loadWeekStats(WEEK1_DAYS);
+  const w2 = await loadWeekStats(DAYS);
+  const ctx = document.getElementById('compareChart');
+  if (compareChart) { compareChart.destroy(); compareChart = null; }
+  if (ctx) {
+    compareChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['페이지', '세션', '시간(분)', '활성일'],
+        datasets: [
+          { label: '1주차', data: [w1.totalPages, w1.totalSessions, w1.totalMinutes, w1.activeDays], backgroundColor: '#B4B2A9', borderColor: '#5F5E5A', borderWidth: 0.5 },
+          { label: '2주차', data: [w2.totalPages, w2.totalSessions, w2.totalMinutes, w2.activeDays], backgroundColor: '#7F77DD', borderColor: '#26215C', borderWidth: 0.5 }
+        ]
+      },
+      options: {
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 11 } } } },
+        scales: { x: { beginAtZero: true } }
+      }
+    });
+  }
+  const fmtChange = (a, b) => {
+    if (a === 0 && b === 0) return '—';
+    const diff = b - a;
+    if (a === 0) return `+${diff}`;
+    const pct = Math.round(diff / a * 100);
+    return `${diff>=0?'+':''}${diff} <span style="color:var(--text-3);font-size:11px;">(${pct>=0?'+':''}${pct}%)</span>`;
+  };
+  const fmtTime = (m) => m >= 60 ? `${Math.floor(m/60)}h ${m%60}m` : `${m}m`;
+  const f1 = w1.focusCount > 0 ? (w1.focusSum / w1.focusCount) : null;
+  const f2 = w2.focusCount > 0 ? (w2.focusSum / w2.focusCount) : null;
+  tableEl.innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead><tr style="border-bottom:1px solid var(--border);color:var(--text-3);font-size:11px;">
+        <th style="text-align:left;padding:8px 6px;font-weight:500;">지표</th>
+        <th style="text-align:right;padding:8px 6px;font-weight:500;">1주차</th>
+        <th style="text-align:right;padding:8px 6px;font-weight:500;">2주차</th>
+        <th style="text-align:right;padding:8px 6px;font-weight:500;">변화</th>
+      </tr></thead><tbody>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 6px;">총 페이지</td><td style="text-align:right;color:var(--text-2);">${w1.totalPages}p</td><td style="text-align:right;font-weight:500;">${w2.totalPages}p</td><td style="text-align:right;">${fmtChange(w1.totalPages, w2.totalPages)}</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 6px;">세션 수</td><td style="text-align:right;color:var(--text-2);">${w1.totalSessions}</td><td style="text-align:right;font-weight:500;">${w2.totalSessions}</td><td style="text-align:right;">${fmtChange(w1.totalSessions, w2.totalSessions)}</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 6px;">학습 시간</td><td style="text-align:right;color:var(--text-2);">${fmtTime(w1.totalMinutes)}</td><td style="text-align:right;font-weight:500;">${fmtTime(w2.totalMinutes)}</td><td style="text-align:right;">${fmtChange(w1.totalMinutes, w2.totalMinutes)}</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 6px;">활성일</td><td style="text-align:right;color:var(--text-2);">${w1.activeDays}/7</td><td style="text-align:right;font-weight:500;">${w2.activeDays}/7</td><td style="text-align:right;">${fmtChange(w1.activeDays, w2.activeDays)}</td></tr>
+        <tr><td style="padding:8px 6px;">평균 집중도</td><td style="text-align:right;color:var(--text-2);">${f1!==null ? f1.toFixed(1) : '-'}</td><td style="text-align:right;font-weight:500;">${f2!==null ? f2.toFixed(1) : '-'}</td><td style="text-align:right;">${f1!==null && f2!==null ? ((f2-f1)>=0?'+':'')+(f2-f1).toFixed(1) : '—'}</td></tr>
+      </tbody>
+    </table>
+  `;
+  document.getElementById('compareStats').textContent = `1주차 → 2주차`;
+}
+
 async function connect() {
   setStatus('연결 중...');
   try {
@@ -738,6 +1037,7 @@ async function connect() {
     document.getElementById('mainContent').style.display = 'block';
     document.getElementById('reloadBtn').disabled = false;
     document.getElementById('logoutBtn').disabled = false;
+    await loadExtraBooks();
     renderLegend();
     renderPlanChart();
     populateBookDropdown();
@@ -748,6 +1048,8 @@ async function connect() {
     renderSleepHabit();
     await renderSessions();
     await loadActualAndRender();
+    await renderReflectionPanel();
+    await renderCompare();
   } catch (e) {
     setStatus('연결 실패', 'warn');
     toast('오류: ' + e.message + ' (token/owner/repo 확인)', false);
@@ -760,6 +1062,8 @@ document.getElementById('reloadBtn').addEventListener('click', async () => {
   renderSleepHabit();
   await renderSessions();
   await loadActualAndRender();
+  await renderReflectionPanel();
+  await renderCompare();
 });
 
 document.getElementById('logoutBtn').addEventListener('click', () => {
