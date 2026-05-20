@@ -267,6 +267,10 @@
         </div>
         <div><label>집중도 <span id="sFocusVal">3</span>/5</label><input type="range" id="sFocus" min="1" max="5" value="3"></div>
         <div class="row">
+          <div><label>장소</label><input type="text" id="sLocation" list="locationList" placeholder="예: 카페, 도서관, 집책상"><datalist id="locationList"></datalist></div>
+          <div><label>쉬는 시간 (분)</label><input type="number" id="sBreak" min="0" placeholder="0"></div>
+        </div>
+        <div class="row">
           <div><label>폰 킨 횟수</label><input type="number" id="sPhone" min="0" placeholder="0"></div>
           <div><label>딴생각 (쉼표, 적을수록 좋음)</label><input type="text" id="sDistraction" placeholder="예: 점심, 카톡"></div>
         </div>
@@ -436,11 +440,14 @@ function parseSessions(text) {
     const phoneMatch = (block.match(/- 폰: (\d+)회/) || []);
     const phone = phoneMatch[1] ? parseInt(phoneMatch[1]) : 0;
     const distraction = (block.match(/- 딴생각: (.+)/) || [])[1] || '';
+    const location = (block.match(/- 장소: (.+)/) || [])[1] || '';
+    const breakMatch = (block.match(/- 쉬는 시간: (\d+)분/) || []);
+    const breakMin = breakMatch[1] ? parseInt(breakMatch[1]) : 0;
     const memo = (block.match(/- 메모: (.+)/) || [])[1];
     const keywords = (block.match(/- 키워드: (.+)/) || [])[1];
     const reflMatch = block.match(/- 정리:\s*([\s\S]+?)(?=\n- |$)/);
     const reflection = reflMatch ? reflMatch[1].trim() : '';
-    result.push({ start: m[1], end: m[2], minutes: m[3], book, activity, progress, focus, phone, distraction, memo, keywords, reflection, startPage, endPage, unit, rawBlock: m[0] });
+    result.push({ start: m[1], end: m[2], minutes: m[3], book, activity, progress, focus, phone, distraction, location, breakMin, memo, keywords, reflection, startPage, endPage, unit, rawBlock: m[0] });
   }
   return result;
 }
@@ -661,6 +668,13 @@ function renderBooks() {
   });
 }
 
+function populateLocationList() {
+  const dl = document.getElementById('locationList');
+  if (!dl) return;
+  const locs = JSON.parse(localStorage.getItem('locations') || '[]');
+  dl.innerHTML = locs.map(l => `<option value="${l}">`).join('');
+}
+
 function populateBookDropdown() {
   const sel = document.getElementById('sBook');
   const cur = sel.value;
@@ -753,7 +767,7 @@ async function renderSessions() {
             </span>
             <span class="time">${s.start}-${s.end} (${s.minutes}분)</span>
           </div>
-          <div class="body">${s.progress ? e(s.progress)+' · ' : ''}집중 ${s.focus||'-'}/5${s.keywords?' · 🔑 '+e(s.keywords):''}${s.memo?' · '+e(s.memo):''}</div>
+          <div class="body">${s.progress ? e(s.progress)+' · ' : ''}집중 ${s.focus||'-'}/5${s.location?' · 📍 '+e(s.location):''}${s.breakMin?' · ☕ '+s.breakMin+'분':''}${s.keywords?' · 🔑 '+e(s.keywords):''}${s.memo?' · '+e(s.memo):''}</div>
           ${(s.phone || s.distraction) ? `<div style="margin-top:6px;padding:6px 8px;background:#FAEEDA;border-left:2px solid #BA7517;border-radius:0 4px 4px 0;font-size:12px;color:#412402;">${s.phone ? `<span style="display:inline-block;padding:1px 5px;font-size:10px;background:#BA7517;color:white;border-radius:3px;margin-right:5px;">📵 ${s.phone}회</span>` : ''}${s.distraction ? `<span style="color:#633806;">딴생각:</span> ${e(s.distraction)}` : ''}</div>` : ''}
           ${s.reflection ? `<div style="margin-top:6px;padding:6px 8px;background:var(--surface-2);border-left:2px solid ${c};border-radius:0 4px 4px 0;font-size:12px;white-space:pre-wrap;">${e(s.reflection)}</div>` : ''}
         `;
@@ -845,6 +859,9 @@ document.getElementById('saveSession').addEventListener('click', async () => {
     const phoneRaw = document.getElementById('sPhone').value;
     const phone = phoneRaw === '' ? 0 : Math.max(0, Number(phoneRaw));
     const distraction = document.getElementById('sDistraction').value.trim();
+    const location = document.getElementById('sLocation').value.trim();
+    const breakRaw = document.getElementById('sBreak').value;
+    const breakMin = breakRaw === '' ? 0 : Math.max(0, Number(breakRaw));
     const keywords = document.getElementById('sKeywords').value.trim();
     const memo = document.getElementById('sMemo').value.trim();
     const reflection = document.getElementById('sReflection').value.trim();
@@ -870,10 +887,20 @@ document.getElementById('saveSession').addEventListener('click', async () => {
       : '';
     const entry = `### ${start}-${end} (${minutes}분) — ${book} [${activity}]\n` +
       progressLine + `- 집중: ${focus}/5\n` +
+      (location ? `- 장소: ${location}\n` : '') +
+      (breakRaw !== '' ? `- 쉬는 시간: ${breakMin}분\n` : '') +
       (phoneRaw !== '' ? `- 폰: ${phone}회\n` : '') +
       (distraction ? `- 딴생각: ${distraction}\n` : '') +
       (keywords ? `- 키워드: ${keywords}\n` : '') +
       (memo ? `- 메모: ${memo}\n` : '') + reflBlock;
+    if (location) {
+      const locs = JSON.parse(localStorage.getItem('locations') || '[]');
+      if (!locs.includes(location)) {
+        locs.push(location);
+        localStorage.setItem('locations', JSON.stringify(locs));
+        populateLocationList();
+      }
+    }
     await appendSession(entry);
     document.getElementById('sEndPage').value = '';
     document.getElementById('sStartPage').value = '';
@@ -882,6 +909,8 @@ document.getElementById('saveSession').addEventListener('click', async () => {
     document.getElementById('sReflection').value = '';
     document.getElementById('sPhone').value = '';
     document.getElementById('sDistraction').value = '';
+    document.getElementById('sLocation').value = '';
+    document.getElementById('sBreak').value = '';
     document.getElementById('sStart').value = end;
     document.getElementById('sEnd').value = nowTime();
     toast('세션 저장됨');
@@ -1246,6 +1275,7 @@ async function connect() {
     renderLegend();
     renderPlanChart();
     populateBookDropdown();
+    populateLocationList();
     document.getElementById('sBook').dispatchEvent(new Event('change'));
     document.getElementById('sStart').value = nowTime();
     document.getElementById('sEnd').value = nowTime();
@@ -1275,6 +1305,153 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
   gh.clearCreds();
   location.reload();
 });
+
+// ===== Pomodoro timer =====
+let pomoTimer = null;
+let pomoEndTime = 0;
+let pomoState = 'idle';
+let pomoPrevState = null;
+let pomoRemaining = 25 * 60;
+const POMO_COUNT_KEY = `pomoCount:${todayStr}`;
+const POMO_WORK_KEY = 'pomoWorkMin';
+const POMO_BREAK_KEY = 'pomoBreakMin';
+
+function pomoSecondsLeft() {
+  return Math.max(0, Math.ceil((pomoEndTime - Date.now()) / 1000));
+}
+function pomoUpdateDisplay() {
+  const sec = (pomoState === 'idle' || pomoState === 'paused') ? pomoRemaining : pomoSecondsLeft();
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  const display = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const timeEl = document.getElementById('pomoTime');
+  if (timeEl) timeEl.textContent = display;
+  const stateEl = document.getElementById('pomoState');
+  if (stateEl) {
+    const labels = { idle: '대기', work: '🎯 집중', break: '☕ 휴식', paused: '⏸ 일시정지' };
+    stateEl.textContent = labels[pomoState] || '대기';
+  }
+  if (pomoState === 'work' || pomoState === 'break') {
+    document.title = `${display} ${pomoState === 'work' ? '🎯' : '☕'} — 학습 대시보드`;
+  } else {
+    document.title = '2주차 학습 대시보드';
+  }
+  // background tint
+  const card = document.getElementById('pomodoroCard');
+  if (card) {
+    if (pomoState === 'work') card.style.borderLeft = '3px solid #D85A30';
+    else if (pomoState === 'break') card.style.borderLeft = '3px solid #1D9E75';
+    else if (pomoState === 'paused') card.style.borderLeft = '3px solid #BA7517';
+    else card.style.borderLeft = '';
+  }
+}
+function pomoTick() {
+  if (pomoSecondsLeft() <= 0) pomoFinished();
+  else pomoUpdateDisplay();
+}
+function pomoBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.25, 0.5].forEach(offset => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = 880;
+      const t = ctx.currentTime + offset;
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.exponentialRampToValueAtTime(0.3, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+      osc.start(t);
+      osc.stop(t + 0.2);
+    });
+    setTimeout(() => ctx.close(), 1000);
+  } catch(e) {}
+}
+function pomoFinished() {
+  if (pomoTimer) { clearInterval(pomoTimer); pomoTimer = null; }
+  const wasWork = pomoState === 'work';
+  if (wasWork) {
+    const n = parseInt(localStorage.getItem(POMO_COUNT_KEY) || '0') + 1;
+    localStorage.setItem(POMO_COUNT_KEY, String(n));
+    const cEl = document.getElementById('pomoCount');
+    if (cEl) cEl.textContent = n;
+  }
+  pomoBeep();
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try { new Notification(wasWork ? '🎯 집중 완료! 휴식 시간' : '☕ 휴식 끝. 다시 집중!'); } catch(e){}
+  }
+  const auto = document.getElementById('pomoAutoCycle').checked;
+  if (auto) {
+    const nextMin = wasWork ? Number(document.getElementById('pomoBreakMin').value) : Number(document.getElementById('pomoWorkMin').value);
+    pomoState = wasWork ? 'break' : 'work';
+    pomoEndTime = Date.now() + nextMin * 60 * 1000;
+    pomoTimer = setInterval(pomoTick, 250);
+    pomoUpdateDisplay();
+  } else {
+    pomoState = 'idle';
+    pomoRemaining = Number(document.getElementById('pomoWorkMin').value) * 60;
+    document.getElementById('pomoStart').disabled = false;
+    document.getElementById('pomoPause').disabled = true;
+    pomoUpdateDisplay();
+  }
+}
+
+document.getElementById('pomoStart').addEventListener('click', () => {
+  if ('Notification' in window && Notification.permission === 'default') {
+    try { Notification.requestPermission(); } catch(e){}
+  }
+  if (pomoState === 'paused') {
+    pomoState = pomoPrevState || 'work';
+    pomoEndTime = Date.now() + pomoRemaining * 1000;
+  } else if (pomoState === 'idle') {
+    pomoState = 'work';
+    pomoEndTime = Date.now() + Number(document.getElementById('pomoWorkMin').value) * 60 * 1000;
+  }
+  pomoTimer = setInterval(pomoTick, 250);
+  document.getElementById('pomoStart').disabled = true;
+  document.getElementById('pomoPause').disabled = false;
+  pomoUpdateDisplay();
+});
+document.getElementById('pomoPause').addEventListener('click', () => {
+  if (!pomoTimer) return;
+  clearInterval(pomoTimer); pomoTimer = null;
+  pomoRemaining = pomoSecondsLeft();
+  pomoPrevState = pomoState;
+  pomoState = 'paused';
+  document.getElementById('pomoStart').disabled = false;
+  document.getElementById('pomoPause').disabled = true;
+  pomoUpdateDisplay();
+});
+document.getElementById('pomoReset').addEventListener('click', () => {
+  if (pomoTimer) { clearInterval(pomoTimer); pomoTimer = null; }
+  pomoState = 'idle';
+  pomoPrevState = null;
+  pomoRemaining = Number(document.getElementById('pomoWorkMin').value) * 60;
+  document.getElementById('pomoStart').disabled = false;
+  document.getElementById('pomoPause').disabled = true;
+  pomoUpdateDisplay();
+});
+document.getElementById('pomoWorkMin').addEventListener('change', (e) => {
+  localStorage.setItem(POMO_WORK_KEY, e.target.value);
+  if (pomoState === 'idle') {
+    pomoRemaining = Number(e.target.value) * 60;
+    pomoUpdateDisplay();
+  }
+});
+document.getElementById('pomoBreakMin').addEventListener('change', (e) => {
+  localStorage.setItem(POMO_BREAK_KEY, e.target.value);
+});
+
+// Init
+(() => {
+  const savedWork = localStorage.getItem(POMO_WORK_KEY);
+  const savedBreak = localStorage.getItem(POMO_BREAK_KEY);
+  if (savedWork) document.getElementById('pomoWorkMin').value = savedWork;
+  if (savedBreak) document.getElementById('pomoBreakMin').value = savedBreak;
+  pomoRemaining = Number(document.getElementById('pomoWorkMin').value) * 60;
+  document.getElementById('pomoCount').textContent = localStorage.getItem(POMO_COUNT_KEY) || '0';
+  pomoUpdateDisplay();
+})();
 
 // Boot
 (async () => {
